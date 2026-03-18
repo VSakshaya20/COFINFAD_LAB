@@ -1,0 +1,58 @@
+[
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this site\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "Proposal.html",
+    "href": "Proposal.html",
+    "title": "Building Web-enabled Visual Analytics Application with Shiny for Democratising Data and Analytics",
+    "section": "",
+    "text": "The rapid expansion of financial technology platforms has generated large volumes of customer data, creating opportunities to better understand user behaviour and financial engagement. Effectively analysing this data is essential for identifying patterns in customer usage, preferences, and interactions with financial services.\nThis project is motivated by the need to translate complex customer data into meaningful and accessible visualisations and insights. By exploring demographic characteristics, financial activity, and service usage, we will uncover key trends and differences across customer groups.\nAdditionally, we will emphasise the importance of interactive analytical tools in making data exploration more intuitive. By enabling users to dynamically explore and interpret data, we will support deeper understanding and more informed decision-making."
+  },
+  {
+    "objectID": "Proposal.html#exploratory-data-analysis",
+    "href": "Proposal.html#exploratory-data-analysis",
+    "title": "Building Web-enabled Visual Analytics Application with Shiny for Democratising Data and Analytics",
+    "section": "4.1 Exploratory Data Analysis",
+    "text": "4.1 Exploratory Data Analysis\nFor this project, EDA will be conducted primarily through visualisation techniques to enable users to derive insights through interactive visual analytics. The availability of demographic, financial, behavioural, and engagement-related variables provides a multi-dimensional view of fintech customer behaviour.\nWe will explore variable distributions, compare customer segments, and identify patterns across variables. These exploratory insights will guide both the confirmatory analysis and the design of the Shiny application."
+  },
+  {
+    "objectID": "Proposal.html#confirmatory-data-analysis",
+    "href": "Proposal.html#confirmatory-data-analysis",
+    "title": "Building Web-enabled Visual Analytics Application with Shiny for Democratising Data and Analytics",
+    "section": "4.2 Confirmatory Data Analysis",
+    "text": "4.2 Confirmatory Data Analysis\nFor this project, CDA will be conducted in two main components.\nFirst, we will perform hypothesis testing to assess the statistical significance of relationships and differences between variables. This includes tests such as t-tests, ANOVA, chi-square tests, and their non-parametric equivalents where appropriate.\nSecond, we will conduct segmentation analysis using clustering techniques to identify distinct customer groups based on their demographic and behavioural characteristics. This will provide deeper insights into the underlying structure of the dataset.\nTogether, these methods will ensure that key findings are statistically supported and analytically robust."
+  },
+  {
+    "objectID": "Proposal.html#segmentation-analysis",
+    "href": "Proposal.html#segmentation-analysis",
+    "title": "Building Web-enabled Visual Analytics Application with Shiny for Democratising Data and Analytics",
+    "section": "4.3 Segmentation Analysis",
+    "text": "4.3 Segmentation Analysis"
+  },
+  {
+    "objectID": "Proposal.html#variable-distribution-analysis-univariate-analysis",
+    "href": "Proposal.html#variable-distribution-analysis-univariate-analysis",
+    "title": "Building Web-enabled Visual Analytics Application with Shiny for Democratising Data and Analytics",
+    "section": "5.1 Variable Distribution Analysis (Univariate Analysis)",
+    "text": "5.1 Variable Distribution Analysis (Univariate Analysis)\nThis module will focus on understanding the distribution and characteristics of individual variables using exploratory data analysis (EDA). As there are no predefined benchmarks, confirmatory analysis will not be applicable.\nThe analysis will be structured into key categories:\n\nDemographics:\nWe will use bar charts for categorical variables and histograms/boxplots for numerical variables to understand the composition of the customer base.\nTransaction Behaviour:\nWe will use histograms, density plots, and boxplots to examine distributions, along with bar charts for categorical variables such as transaction type.\nProduct Ownership & App Usage:\nWe will use bar charts to analyse adoption of financial products and platform engagement features.\nCustomer Satisfaction:\nWe will use histograms and boxplots for numerical metrics, and bar charts for sentiment-related variables.\nText Analysis:\nWe will preprocess text data (e.g., feature requests, complaint topics) and use bar charts to highlight the most frequent themes."
+  },
+  {
+    "objectID": "Proposal.html#comparative-analysis-bivariate-and-multivariate-analysis",
+    "href": "Proposal.html#comparative-analysis-bivariate-and-multivariate-analysis",
+    "title": "Building Web-enabled Visual Analytics Application with Shiny for Democratising Data and Analytics",
+    "section": "5.2 Comparative Analysis (Bivariate and Multivariate Analysis)",
+    "text": "5.2 Comparative Analysis (Bivariate and Multivariate Analysis)\nThis module will examine relationships between variables using both visual and statistical techniques.\n\nCategorical vs Numerical:\nWe will use boxplots, violin/raincloud plots, and ridgeline plots to compare distributions across groups. Statistical tests (e.g., ANOVA or Kruskal–Wallis) will be applied to assess significance.\nNumerical vs Numerical:\nWe will use scatter plots with trend lines to visualise relationships, supported by correlation-based analysis.\nCategorical vs Categorical:\nWe will use stacked bar charts and mosaic plots to examine associations, with chi-square tests applied for validation.\nMultivariate Overview:\nWe will use a correlation matrix to provide a summary of relationships across multiple numerical variables."
+  },
+  {
+    "objectID": "Proposal.html#segmentation-analysis-1",
+    "href": "Proposal.html#segmentation-analysis-1",
+    "title": "Building Web-enabled Visual Analytics Application with Shiny for Democratising Data and Analytics",
+    "section": "5.3 Segmentation Analysis",
+    "text": "5.3 Segmentation Analysis"
+  }
+]
