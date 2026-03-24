@@ -1,4 +1,4 @@
-pacman::p_load(shiny, shinydashboard, shinythemes, 
+pacman::p_load(shiny, shinydashboard, shinythemes, rlang,
                plotly, tidyverse, ggstatsplot, tools, ggiraph, ggpubr, ggdist, ggridges, ggmosaic, tidytext, cluster, factoextra, fpc, treemap)
 
 df <- read_csv("../data/customer_data.csv")
@@ -17,6 +17,13 @@ df$marital_status <- as.factor(df$marital_status)
 df$acquisition_channel <- as.factor(df$acquisition_channel)
 df$preferred_transaction_type <- as.factor(df$preferred_transaction_type)
 df$location <- as.factor(df$location)
+
+cat_vars <- reactive({
+  names(df)[sapply(df, function(x) is.factor(x) || is.character(x))]
+})
+num_vars <- reactive({
+  names(df)[sapply(df, is.numeric)]
+})
 
 calc_entropy <- function(clusters) {
   props <- table(clusters) / length(clusters)
@@ -255,7 +262,116 @@ function(input, output, session) {
   output$sat_max    <- renderText({ if(is.numeric(sat_var_data())) max(sat_var_data(), na.rm = TRUE) else "" })
   output$sat_sd     <- renderText({ if(is.numeric(sat_var_data())) sd(sat_var_data(), na.rm = TRUE) else "" })
   
+  #Bivariate 
+  output$bivar_inputs <- renderUI({
+    tab <- input$bivar_tabs
+    if(tab == "Category vs Numerical") {
+      tagList(
+        selectInput("var1", "Categorical Variable", choices = cat_vars()),
+        selectInput("var2", "Numerical Variable", choices = num_vars())
+      )
+    } else if(tab == "Numerical vs Numerical") {
+      tagList(
+        selectInput("var1", "Variable 1", choices = num_vars()),
+        selectInput("var2", "Variable 2", choices = num_vars())
+      )
+    } else {
+      tagList(
+        selectInput("var1", "Variable 1", choices = cat_vars()),
+        selectInput("var2", "Variable 2", choices = cat_vars())
+      )
+    }
+  })
   
+  output$plot_selector <- renderUI({
+    tab <- input$bivar_tabs
+    if(tab == "Category vs Numerical") {
+      selectInput("plot_type", "Plot Type",
+                  choices = c("Boxplot", "Violin", "Raincloud", "Ridgeline"))
+    } else if(tab == "Numerical vs Numerical") {
+      selectInput("plot_type", "Plot Type",
+                  choices = c("Scatter"))
+    } else {
+      selectInput("plot_type", "Plot Type",
+                  choices = c("Stacked Bar", "Mosaic"))
+    }
+  })
+  
+  output$bivar_plot <- renderPlot({
+    req(input$eda_btn)
+    x <- input$var1
+    y <- input$var2
+    type <- input$plot_type
+    tab <- input$bivar_tabs
+    
+    # CATEGORY vs NUMERICAL
+    if(tab == "Category vs Numerical") {
+      if(input$cda_btn > 0) {
+        ggstatsplot::ggbetweenstats(
+          data = df,
+          x = !!sym(x),
+          y = !!sym(y),
+          type = input$test_type,
+          conf.level = as.numeric(input$conf_level)
+        )
+      } else if(type == "Boxplot") {
+        ggplot(df, aes(x = .data[[x]], y = .data[[y]])) +
+          geom_boxplot(fill = "#3498db") +
+          coord_flip()
+      }
+      else if(type == "Violin") {
+        ggplot(df, aes(x = .data[[x]], y = .data[[y]])) +
+          geom_violin(fill = "#3498db") +
+          coord_flip()
+      }
+      else if(type == "Raincloud") {
+        ggplot(df, aes(x = .data[[x]], y = .data[[y]])) +
+          ggdist::stat_halfeye(adjust = 0.5, justification = -0.2) +
+          geom_boxplot(width = 0.2) +
+          coord_flip()
+      }
+      else if(type == "Ridgeline") {
+        ggridges::ggplot(df,
+                         aes(x = .data[[y]], y = .data[[x]])) +
+          ggridges::geom_density_ridges()
+      }
+    }
+    
+    # NUMERICAL vs NUMERICAL
+    else if(tab == "Numerical vs Numerical") {
+      if(input$cda_btn > 0) {
+        ggstatsplot::ggscatterstats(
+          data = df,
+          x = !!sym(x),
+          y = !!sym(y),
+          type = input$test_type,
+          conf.level = as.numeric(input$conf_level)
+        )
+      }
+      else if(type == "Scatter") {
+        ggplot(df, aes(x = .data[[x]], y = .data[[y]])) +
+          geom_point(alpha = 0.6) +
+          geom_smooth()
+      }
+  }
+    
+    # CATEGORICAL vs CATEGORICAL
+    else {
+      if(type == "Stacked Bar") {
+        ggplot(df, aes(x = .data[[x]], fill = .data[[y]])) +
+          geom_bar(position = "fill") +
+          labs(y = "Proportion")
+      }
+      else if(type == "Mosaic") {
+        ggplot(df) +
+          ggmosaic::geom_mosaic(
+            aes(x = product(.data[[x]]),
+                fill = .data[[y]])
+          )
+      }
+    }
+  }
+)
   
   #Segmentation
   demo_res <- reactive({

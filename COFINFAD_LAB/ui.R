@@ -1,4 +1,4 @@
-pacman::p_load(shiny, shinydashboard, shinythemes, dashboardthemes,
+pacman::p_load(shiny, shinydashboard, shinythemes, dashboardthemes, rlang, 
                plotly, tidyverse, ggstatsplot, tools, ggiraph, ggpubr, ggdist, ggridges, ggmosaic, tidytext, cluster, factoextra, fpc, treemap)
 
 controls_ui <- function(id_prefix, vars, default_k = 4) {
@@ -243,7 +243,45 @@ ui <- dashboardPage(
               )
       ),
       
-      tabItem(tabName = "biv"),
+      tabItem(tabName = "biv",
+              fluidRow(
+                # LEFT PANEL (controls)
+                column(3,
+                       h4("Step 1: Visualisation"),
+                       uiOutput("bivar_inputs"),
+                       uiOutput("plot_selector"),
+                       actionButton("eda_btn", "Analyse"),
+                       
+                       br(), br(),
+                       
+                       h4("Step 2: Statistical Validity"),
+                       selectInput("test_type", "Type of test",
+                                   choices = c("parametric", "nonparametric")),
+                       selectInput("conf_level", "Confidence level",
+                                   choices = c(0.90, 0.95, 0.99),
+                                   selected = 0.95),
+                       
+                       actionButton("cda_btn", "Analyse")
+                       
+                ),
+                
+                # RIGHT PANEL (tabs)
+                column(9,
+                       tabsetPanel(
+                         id = "bivar_tabs",
+                         tabPanel("Category vs Numerical"),
+                         tabPanel("Numerical vs Numerical"),
+                         tabPanel("Categorical vs Categorical")
+                       ),
+                       
+                       br(),
+                       
+                       plotOutput("bivar_plot", height = "450px")
+                )
+              )
+      ),
+      
+
       tabItem(tabName = "multiv"),
       
       tabItem(tabName = "demo",
@@ -291,6 +329,7 @@ ui <- dashboardPage(
                 )
               )),
       tabItem(tabName = "location")
+      
     )
   )
 )
