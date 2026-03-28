@@ -1,22 +1,9 @@
-pacman::p_load(shiny, shinydashboard, shinythemes, rlang,
+pacman::p_load(shiny, shinydashboard, shinythemes, rlang, RColorBrewer,
                plotly, tidyverse, ggstatsplot, tools, ggiraph, ggpubr, ggdist, ggridges, ggmosaic, tidytext, cluster, factoextra, fpc, treemap)
 
-df <- read_csv("../data/customer_data.csv")
+df <- read_csv("data/cleaned_data.csv")
 
-df <- df[, !(names(df) %in% c("customer_segment", "nps_score", "last_survey_date", "feedback_sentiment", "monthly_transaction_count", 
-                              "average_transaction_value", "total_transaction_volume", "transaction_frequency", "last_transaction_date", 
-                              "first_transaction_date", "churn_probability", "clv_segment", "customer_lifetime_value"))]
-
-df$customer_id <- as.character(df$customer_id)
-
-df$gender <- as.factor(df$gender)
-df$income_bracket <- as.factor(df$income_bracket)
-df$occupation <- as.factor(df$occupation)
-df$education_level <- as.factor(df$education_level)
-df$marital_status <- as.factor(df$marital_status)
-df$acquisition_channel <- as.factor(df$acquisition_channel)
-df$preferred_transaction_type <- as.factor(df$preferred_transaction_type)
-df$location <- as.factor(df$location)
+my_palette <- brewer.pal(n = 12, "Paired")
 
 cat_vars <- reactive({
   names(df)[sapply(df, function(x) is.factor(x) || is.character(x))]
@@ -297,8 +284,16 @@ function(input, output, session) {
     }
   })
   
+  last_clicked <- reactiveVal("eda")
+  observeEvent(input$eda_btn, {
+    last_clicked("eda")
+  })
+  observeEvent(input$cda_btn, {
+    last_clicked("cda")
+  })
+  
   output$bivar_plot <- renderPlot({
-    req(input$eda_btn)
+    req(input$var1, input$var2, input$plot_type, input$bivar_tabs)
     x <- input$var1
     y <- input$var2
     type <- input$plot_type
@@ -306,7 +301,7 @@ function(input, output, session) {
     
     # CATEGORY vs NUMERICAL
     if(tab == "Category vs Numerical") {
-      if(input$cda_btn > 0) {
+      if(last_clicked() == "cda") {
         ggstatsplot::ggbetweenstats(
           data = df,
           x = !!sym(x),
@@ -331,7 +326,7 @@ function(input, output, session) {
           coord_flip()
       }
       else if(type == "Ridgeline") {
-        ggridges::ggplot(df,
+        ggplot(df,
                          aes(x = .data[[y]], y = .data[[x]])) +
           ggridges::geom_density_ridges()
       }
@@ -339,13 +334,14 @@ function(input, output, session) {
     
     # NUMERICAL vs NUMERICAL
     else if(tab == "Numerical vs Numerical") {
-      if(input$cda_btn > 0) {
+      if(last_clicked() == "cda") {
         ggstatsplot::ggscatterstats(
           data = df,
           x = !!sym(x),
           y = !!sym(y),
           type = input$test_type,
-          conf.level = as.numeric(input$conf_level)
+          conf.level = as.numeric(input$conf_level), 
+          palette = my_palette
         )
       }
       else if(type == "Scatter") {
@@ -357,21 +353,47 @@ function(input, output, session) {
     
     # CATEGORICAL vs CATEGORICAL
     else {
-      if(type == "Stacked Bar") {
+      if(last_clicked() == "cda") {
+        ggstatsplot::ggbarstats(
+          data = df,
+          x = !!sym(x),
+          y = !!sym(y),
+          palette = "Dark2"
+        )
+      }
+      else if(type == "Stacked Bar") {
         ggplot(df, aes(x = .data[[x]], fill = .data[[y]])) +
           geom_bar(position = "fill") +
           labs(y = "Proportion")
       }
       else if(type == "Mosaic") {
-        ggplot(df) +
+        ggplot(data = df) +
           ggmosaic::geom_mosaic(
-            aes(x = product(.data[[x]]),
-                fill = .data[[y]])
+            aes_string(x = paste0("product(", x, ")"),
+                       fill = y)
           )
+        }
       }
     }
-  }
-)
+  )
+  
+  output$stat_controls <- renderUI({
+    tab <- input$bivar_tabs
+    # Hide controls for Categorical vs Categorical
+    if(tab == "Categorical vs Categorical") {
+        return(NULL)
+    }
+    # Show controls for other cases
+    else {
+      tagList(
+      selectInput("test_type", "Type of test",
+                  choices = c("parametric", "nonparametric")),
+      selectInput("conf_level", "Confidence level",
+                  choices = c(0.90, 0.95, 0.99),
+                  selected = 0.95)
+    )
+    }
+  })
   
   #Segmentation
   demo_res <- reactive({

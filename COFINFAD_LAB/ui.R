@@ -56,7 +56,7 @@ ui <- dashboardPage(
   
   dashboardBody(
     shinyDashboardThemes(
-      theme = "grey_light"  
+      theme = "onenote"  
     ),
     tags$style(HTML("
 
@@ -255,13 +255,9 @@ ui <- dashboardPage(
                        br(), br(),
                        
                        h4("Step 2: Statistical Validity"),
-                       selectInput("test_type", "Type of test",
-                                   choices = c("parametric", "nonparametric")),
-                       selectInput("conf_level", "Confidence level",
-                                   choices = c(0.90, 0.95, 0.99),
-                                   selected = 0.95),
-                       
+                       uiOutput("stat_controls"),
                        actionButton("cda_btn", "Analyse")
+          
                        
                 ),
                 
