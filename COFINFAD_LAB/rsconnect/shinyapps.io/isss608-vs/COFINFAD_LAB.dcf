@@ -1,0 +1,13 @@
+name: COFINFAD_LAB
+title: COFINFAD_LAB
+username: isss608-vs
+account: isss608-vs
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 17007076
+bundleId: 11774088
+url: https://isss608-vs.shinyapps.io/COFINFAD_LAB/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: data/cleaned_data_1.csv|data/customer_data.csv

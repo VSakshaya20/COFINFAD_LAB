@@ -1,4 +1,4 @@
-pacman::p_load(shiny, shinydashboard, shinythemes, rlang, RColorBrewer,
+pacman::p_load(shiny, shinydashboard, shinythemes, rlang, RColorBrewer, corrplot,
                plotly, tidyverse, ggstatsplot, tools, ggiraph, ggpubr, ggdist, ggridges, ggmosaic, tidytext, cluster, factoextra, fpc, treemap)
 
 df <- read_csv("data/cleaned_data.csv")
@@ -395,7 +395,43 @@ function(input, output, session) {
     }
   })
   
+  #Multivariate
+  observe({
+    updateCheckboxGroupInput(session, "multi_vars",
+                             choices = names(df)[sapply(df, is.numeric)],
+                             selected = names(df)[sapply(df, is.numeric)][1:5])
+    
+  })
+  
+  output$corr_plot <- renderPlot({
+    req(input$multi_vars)
+    data <- df[, input$multi_vars, drop = FALSE]
+    validate(
+      need(ncol(data) >= 2, "Please select at least 2 variables")
+    )
+    
+    corr_matrix <- cor(
+      data,
+      method = input$corr_method,
+      use = "complete.obs"
+    )
+    
+    corrplot::corrplot(
+      corr_matrix,
+      method = "ellipse",     
+      type = "full",      
+      order = "original",   
+      diag = TRUE,          
+      addCoef.col = "black",    
+      tl.col = "black",         
+      tl.srt = 90,               
+      col = colorRampPalette(c("#b2182b", "white", "#2166ac"))(200) 
+    )
+  })
+  
+  
   #Segmentation
+  # DEMOGRAPHIC
   demo_res <- reactive({
     req(input$demo_vars)
     clara(df[, input$demo_vars], k = input$demo_k)
@@ -409,6 +445,7 @@ function(input, output, session) {
   output$ent_demo <- renderText(calc_entropy(demo_res()$clustering))
   output$aicbic_demo <- renderText("N/A")
   
+  # TRANSACTIONAL
   trans_res <- reactive({
     data <- scale(df[, input$trans_vars])
     kmeans(data, centers = input$trans_k)
@@ -426,6 +463,7 @@ function(input, output, session) {
     aic_bic_text(trans_res(), scale(df[, input$trans_vars]))
   )
   
+  # USAGE
   usage_res <- reactive({
     clara(df[, input$usage_vars], k = input$usage_k)
   })
@@ -438,6 +476,7 @@ function(input, output, session) {
   output$ent_usage <- renderText(calc_entropy(usage_res()$clustering))
   output$aicbic_usage <- renderText("N/A")
   
+  # SATISFACTION
   sat_res <- reactive({
     data <- scale(df[, input$sat_vars])
     kmeans(data, centers = input$sat_k)
@@ -455,11 +494,91 @@ function(input, output, session) {
     aic_bic_text(sat_res(), scale(df[, input$sat_vars]))
   )
   
+  # LOCATION TREEMAP
+  cluster_data_reactive <- reactive({
+    req(df, input$treemap_vars)
+    
+    # Use selected vars OR fallback to your original 3 vars
+    selected_vars <- if(length(input$treemap_vars) > 0) {
+      input$treemap_vars
+    } else {
+      c("total_tx_volume", "tx_count", "app_logins_frequency")
+    }
+    
+    df %>%
+      select(customer_id, all_of(selected_vars)) %>%
+      drop_na() %>%
+      mutate(across(-customer_id, scale))
+  })
+  
+  # Reactive: k-means (uses treemap_k slider)
+  trans_kmeans_reactive <- reactive({
+    clust_dat <- cluster_data_reactive()
+    set.seed(123)
+    kmeans(clust_dat[,-1], centers = input$treemap_k)
+  })
   
   
+  final_df_reactive <- reactive({
+    clust_dat <- cluster_data_reactive()
+    km       <- trans_kmeans_reactive()
+    
+    clust_dat$segment_id <- factor(km$cluster)
+    
+    df %>%
+      inner_join(
+        clust_dat %>% select(customer_id, segment_id),
+        by = "customer_id"
+      )
+  })
   
+  segment_summary_reactive <- reactive({
+    final_df_reactive() %>%
+      group_by(segment_id) %>%
+      summarise(
+        avg_age   = round(mean(age, na.rm = TRUE), 1),
+        top_income = names(sort(table(income_bracket), decreasing = TRUE))[1],
+        avg_vol   = round(mean(total_tx_volume, na.rm = TRUE), 0),
+        .groups   = "drop"
+      ) %>%
+      mutate(persona = case_when(
+        segment_id == "1" ~ "Young Digital",
+        segment_id == "2" ~ "Affluent Professional",
+        segment_id == "3" ~ "Mass Market",
+        segment_id == "4" ~ "High‑Value Senior",
+        TRUE ~ as.character(segment_id)
+      ))
+  })
   
+  tree_prep_labeled_reactive <- reactive({
+    df_seg <- final_df_reactive()
+    summ   <- segment_summary_reactive()
+    
+    df_seg %>%
+      group_by(location, segment_id) %>%
+      summarise(total_vol = sum(total_tx_volume, na.rm = TRUE), .groups = "drop") %>%
+      left_join(summ, by = "segment_id") %>%
+      mutate(label_text = paste0(persona, "\\nAvg Age: ", avg_age))
+  })
   
+  output$treemap <- renderPlot({
+    req(tree_prep_labeled_reactive())
+    df_tree <- tree_prep_labeled_reactive()
+    
+    treemap(df_tree,
+            index = c("location", "label_text"), 
+            vSize = "total_vol",
+            vColor = "location",
+            type = "index",
+            title = paste("Geographic Segments by", paste(input$treemap_vars, collapse = ", "), "(k =", input$treemap_k, ")"),
+            palette = "Set3",
+            fontsize.labels = c(15, 8),          
+            fontcolor.labels = c("black", "darkslategrey"),
+            border.col = c("black", "white"),
+            border.lwds = c(4, 1),
+            align.labels = list(c("center", "center"), c("left", "top"))
+    )
+  }, height = 600, width = 900)
   
 }
 

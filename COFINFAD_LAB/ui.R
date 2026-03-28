@@ -1,4 +1,4 @@
-pacman::p_load(shiny, shinydashboard, shinythemes, dashboardthemes, rlang, 
+pacman::p_load(shiny, shinydashboard, shinythemes, rlang, RColorBrewer, corrplot, 
                plotly, tidyverse, ggstatsplot, tools, ggiraph, ggpubr, ggdist, ggridges, ggmosaic, tidytext, cluster, factoextra, fpc, treemap)
 
 controls_ui <- function(id_prefix, vars, default_k = 4) {
@@ -29,7 +29,8 @@ var_pools <- list(
   usage = c("active_products", "app_logins_frequency",
             "feature_usage_diversity", "bill_payment_user"),
   sat   = c("satisfaction_score", "product_satisfaction",
-            "app_store_rating")
+            "app_store_rating"),
+  treemap = c("total_tx_volume", "tx_count", "app_logins_frequency") 
 )
 
 ui <- dashboardPage(
@@ -55,21 +56,25 @@ ui <- dashboardPage(
   ),
   
   dashboardBody(
-    shinyDashboardThemes(
-      theme = "onenote"  
-    ),
-    tags$style(HTML("
+      theme = shinythemes::shinytheme("yeti"),
+      tags$style(HTML("
+  /* Pure white background */
+  body, .content-wrapper, .right-side, .main-sidebar {
+    background-color: #FFFFFF !important;
+  }
+  
+  
+  /* Remove dashboard skin tint */
+  .skin-black .content-wrapper {
+    background-color: #FFFFFF !important;
+  }
 
+  
+  /* Keep your dark headers */
   .box-header {
     background-color: #020b21 !important;
-    border-bottom: 1px solid #ddd;
+    color: #FFFFFF !important;
   }
-
-  .box-title {
-    color: #f7f6ee !important;
-    font-weight: 600;
-  }
-
 ")),
 
     tabItems(
@@ -278,7 +283,28 @@ ui <- dashboardPage(
       ),
       
 
-      tabItem(tabName = "multiv"),
+      tabItem(tabName = "multiv",
+              
+              fluidRow(
+                # LEFT PANEL (controls)
+                column(3,
+                       h4("Multivariate Overview"),
+                       p("Explore relationships across multiple numerical variables using a correlation matrix."),
+                       checkboxGroupInput(inputId = "multi_vars",
+                                          label = "Select Variables",
+                                          choices = NULL ),
+                       selectInput("corr_method",
+                                   "Correlation Method",
+                                   choices = c("pearson", "spearman"),
+                                   selected = "Pearson"),
+                       actionButton("multi_run", "Generate")
+                ),
+                # RIGHT PANEL (output)
+                column(9,
+                       plotOutput("corr_plot", height = "500px")
+                )
+              )
+      ),
       
       tabItem(tabName = "demo",
                       
@@ -324,7 +350,16 @@ ui <- dashboardPage(
                        metrics_row_ui("sil_sat", "ent_sat", "aicbic_sat")
                 )
               )),
-      tabItem(tabName = "location")
+      tabItem(tabName = "location",
+              fluidRow(
+                column(3,
+                       controls_ui("treemap", var_pools$treemap, 4)  
+                ),
+                column(9,
+                       plotOutput("treemap", height = "500px")
+                )
+              )
+      )
       
     )
   )
