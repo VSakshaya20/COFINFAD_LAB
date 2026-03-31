@@ -136,11 +136,27 @@ function(input, output, session) {
     }
   })
   
-  output$demo_mean   <- renderText({ if(is.numeric(demo_var_data())) mean(demo_var_data(), na.rm = TRUE) else "" })
-  output$demo_median <- renderText({ if(is.numeric(demo_var_data())) median(demo_var_data(), na.rm = TRUE) else "" })
-  output$demo_min    <- renderText({ if(is.numeric(demo_var_data())) min(demo_var_data(), na.rm = TRUE) else "" })
-  output$demo_max    <- renderText({ if(is.numeric(demo_var_data())) max(demo_var_data(), na.rm = TRUE) else "" })
-  output$demo_sd     <- renderText({ if(is.numeric(demo_var_data())) sd(demo_var_data(), na.rm = TRUE) else "" })
+  output$demo_var_name <- renderText({
+    req(input$demo_var)
+    input$demo_var
+  })
+  
+  output$demo_is_numeric <- reactive({
+    is.numeric(demo_var_data())
+  })
+  outputOptions(output, "demo_is_numeric", suspendWhenHidden = FALSE)
+  
+  output$demo_mean   <- renderText({ req(is.numeric(demo_var_data())) 
+    mean(demo_var_data(), na.rm = TRUE)})
+  output$demo_median <- renderText({ req(is.numeric(demo_var_data())) 
+    median(demo_var_data(), na.rm = TRUE)})
+  output$demo_min    <- renderText({ req(is.numeric(demo_var_data())) 
+    min(demo_var_data(), na.rm = TRUE)})
+  output$demo_max    <- renderText({ req(is.numeric(demo_var_data())) 
+    max(demo_var_data(), na.rm = TRUE)})
+  output$demo_sd     <- renderText({ req(is.numeric(demo_var_data())) 
+    sd(demo_var_data(), na.rm = TRUE)})
+  
   
   # TRANSACTIONS
   output$tx_plot <- renderPlot({
@@ -163,11 +179,26 @@ function(input, output, session) {
     }
   })
   
-  output$tx_mean   <- renderText({ if(is.numeric(tx_var_data())) mean(tx_var_data(), na.rm = TRUE) else "" })
-  output$tx_median <- renderText({ if(is.numeric(tx_var_data())) median(tx_var_data(), na.rm = TRUE) else "" })
-  output$tx_min    <- renderText({ if(is.numeric(tx_var_data())) min(tx_var_data(), na.rm = TRUE) else "" })
-  output$tx_max    <- renderText({ if(is.numeric(tx_var_data())) max(tx_var_data(), na.rm = TRUE) else "" })
-  output$tx_sd     <- renderText({ if(is.numeric(tx_var_data())) sd(tx_var_data(), na.rm = TRUE) else "" })
+  output$tx_var_name <- renderText({
+    req(input$tx_var)
+    input$tx_var
+  })
+  
+  output$tx_is_numeric <- reactive({
+    is.numeric(tx_var_data())
+  })
+  outputOptions(output, "tx_is_numeric", suspendWhenHidden = FALSE)
+  
+  output$tx_mean   <- renderText({ req(is.numeric(tx_var_data())) 
+    mean(tx_var_data(), na.rm = TRUE)})
+  output$tx_median <- renderText({ req(is.numeric(tx_var_data())) 
+    median(tx_var_data(), na.rm = TRUE)})
+  output$tx_min    <- renderText({ req(is.numeric(tx_var_data())) 
+    min(tx_var_data(), na.rm = TRUE)})
+  output$tx_max    <- renderText({ req(is.numeric(tx_var_data())) 
+    max(tx_var_data(), na.rm = TRUE)})
+  output$tx_sd     <- renderText({ req(is.numeric(tx_var_data())) 
+    sd(tx_var_data(), na.rm = TRUE)})
   
   #Product
   output$product_plot <- renderPlot({
@@ -193,6 +224,27 @@ function(input, output, session) {
     )
   })
   
+  output$product_var_name <- renderText({
+    req(input$product_var)
+    input$product_var
+  })
+  
+  output$product_is_numeric <- reactive({
+    is.numeric(product_var_data())
+  })
+  outputOptions(output, "product_is_numeric", suspendWhenHidden = FALSE)
+  
+  output$product_mean   <- renderText({ req(is.numeric(product_var_data())) 
+    mean(product_var_data(), na.rm = TRUE)})
+  output$product_median <- renderText({ req(is.numeric(product_var_data())) 
+    median(product_var_data(), na.rm = TRUE)})
+  output$product_min    <- renderText({ req(is.numeric(product_var_data())) 
+    min(product_var_data(), na.rm = TRUE)})
+  output$product_max    <- renderText({ req(is.numeric(product_var_data())) 
+    max(product_var_data(), na.rm = TRUE)})
+  output$product_sd     <- renderText({ req(is.numeric(product_var_data())) 
+    sd(product_var_data(), na.rm = TRUE)})
+  
   # APP USAGE
   output$app_plot <- renderPlot({
     
@@ -216,6 +268,28 @@ function(input, output, session) {
       collapse = " | "
     )
   })
+  
+  output$app_var_name <- renderText({
+    req(input$app_var)
+    input$app_var
+  })
+  
+  output$app_is_numeric <- reactive({
+    is.numeric(app_var_data())
+  })
+  outputOptions(output, "app_is_numeric", suspendWhenHidden = FALSE)
+  
+  output$app_mean   <- renderText({ req(is.numeric(app_var_data())) 
+    mean(app_var_data(), na.rm = TRUE)})
+  output$app_median <- renderText({ req(is.numeric(app_var_data())) 
+    median(app_var_data(), na.rm = TRUE)})
+  output$app_min    <- renderText({ req(is.numeric(app_var_data())) 
+    min(app_var_data(), na.rm = TRUE)})
+  output$app_max    <- renderText({ req(is.numeric(app_var_data())) 
+    max(app_var_data(), na.rm = TRUE)})
+  output$app_sd     <- renderText({ req(is.numeric(app_var_data())) 
+    sd(app_var_data(), na.rm = TRUE)})
+  
   
   # SATISFACTION
   output$sat_plot <- renderPlot({
@@ -243,11 +317,26 @@ function(input, output, session) {
     }
   })
   
-  output$sat_mean   <- renderText({ if(is.numeric(sat_var_data())) mean(sat_var_data(), na.rm = TRUE) else "" })
-  output$sat_median <- renderText({ if(is.numeric(sat_var_data())) median(sat_var_data(), na.rm = TRUE) else "" })
-  output$sat_min    <- renderText({ if(is.numeric(sat_var_data())) min(sat_var_data(), na.rm = TRUE) else "" })
-  output$sat_max    <- renderText({ if(is.numeric(sat_var_data())) max(sat_var_data(), na.rm = TRUE) else "" })
-  output$sat_sd     <- renderText({ if(is.numeric(sat_var_data())) sd(sat_var_data(), na.rm = TRUE) else "" })
+  output$sat_var_name <- renderText({
+    req(input$sat_var)
+    input$sat_var
+  })
+  
+  output$sat_is_numeric <- reactive({
+    is.numeric(sat_var_data())
+  })
+  outputOptions(output, "sat_is_numeric", suspendWhenHidden = FALSE)
+  
+  output$sat_mean   <- renderText({ req(is.numeric(sat_var_data())) 
+    mean(sat_var_data(), na.rm = TRUE)})
+  output$sat_median <- renderText({ req(is.numeric(sat_var_data())) 
+    median(sat_var_data(), na.rm = TRUE)})
+  output$app_min    <- renderText({ req(is.numeric(sat_var_data())) 
+    min(sat_var_data(), na.rm = TRUE)})
+  output$sat_max    <- renderText({ req(is.numeric(sat_var_data())) 
+    max(sat_var_data(), na.rm = TRUE)})
+  output$sat_sd     <- renderText({ req(is.numeric(sat_var_data())) 
+    sd(sat_var_data(), na.rm = TRUE)})
   
   #Bivariate 
   output$bivar_inputs <- renderUI({

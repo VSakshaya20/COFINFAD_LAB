@@ -56,7 +56,7 @@ ui <- dashboardPage(
   ),
   
   dashboardBody(
-      theme = shinythemes::shinytheme("yeti"),
+      theme = shinythemes::shinytheme("cosmo"),
       tags$style(HTML("
   /* Pure white background */
   body, .content-wrapper, .right-side, .main-sidebar {
@@ -85,7 +85,7 @@ ui <- dashboardPage(
                 # LEFT: What you can do
                 box(
                   title = "What you can do",
-                  width = 4,
+                  width = 3,
                   solidHeader = TRUE,
                   
                   p("Use this app to explore and analyse Colombian fintech customer data through interactive visualisations."),
@@ -95,7 +95,7 @@ ui <- dashboardPage(
                 # RIGHT: Key Variables
                 box(
                   title = "Key Variables",
-                  width = 6,
+                  width = 9,
                   solidHeader = TRUE,
                   
                   fluidRow(
@@ -105,14 +105,9 @@ ui <- dashboardPage(
                                "Median: 33")
                     ),
                     column(4, 
-                           box(width = 12, title = "Income",
+                           box(width = 12, title = "Gender",
                                "Mean: 50k", br(),
                                "Median: 45k")
-                    ),
-                    column(4, 
-                           box(width = 12, title = "Score",
-                               "Mean: 700", br(),
-                               "Median: 680")
                     )
                   ),
                   
@@ -120,15 +115,20 @@ ui <- dashboardPage(
                   
                   fluidRow(
                     column(4, 
-                           box(width = 12, title = "Spending",
+                           box(width = 12, title = "Active Products",
                                "Mean: 200", br(),
                                "Median: 180")
                     ),
                     column(4, 
-                           box(width = 12, title = "Visits",
+                           box(width = 12, title = "Average Transaction Value",
                                "Mean: 5", br(),
                                "Median: 4")
-                    )
+                    ),
+                    column(4, 
+                           box(width = 12, title = "Customer Tenure",
+                               "Mean: 700", br(),
+                               "Median: 680")
+                      )
                   )
                 )
               ),
@@ -163,13 +163,16 @@ ui <- dashboardPage(
                          br(),
                          
                          plotOutput("demo_plot"),
-                         fluidRow(
-                           column(2, align = "center", h5("Mean"), textOutput("demo_mean")),
-                           column(2, align = "center", h5("Median"), textOutput("demo_median")),
-                           column(2, align = "center", h5("Min"), textOutput("demo_min")),
-                           column(2, align = "center", h5("Max"), textOutput("demo_max")),
-                           column(2, align = "center", h5("SD"), textOutput("demo_sd"))
-                         )
+                         conditionalPanel(
+                           condition = "output.demo_is_numeric",
+                           fluidRow(
+                            column(1, style = "display: flex; align-items: flex-end; height: 55px;", textOutput("demo_var_name")),
+                            column(2, align = "center", h5("Mean"), textOutput("demo_mean")),
+                            column(2, align = "center", h5("Median"), textOutput("demo_median")),
+                            column(2, align = "center", h5("Min"), textOutput("demo_min")),
+                            column(2, align = "center", h5("Max"), textOutput("demo_max")),
+                            column(2, align = "center", h5("SD"), textOutput("demo_sd"))
+                         ))
                 ),
                 
                 tabPanel("Transactions",
@@ -183,13 +186,16 @@ ui <- dashboardPage(
                                                  "weekend_transaction_ratio")),
                          
                          plotOutput("tx_plot"),
-                         fluidRow(
-                           column(2, align = "center", h5("Mean"), textOutput("tx_mean")),
-                           column(2, align = "center", h5("Median"), textOutput("tx_median")),
-                           column(2, align = "center", h5("Min"), textOutput("tx_min")),
-                           column(2, align = "center", h5("Max"), textOutput("tx_max")),
-                           column(2, align = "center", h5("SD"), textOutput("tx_sd"))
-                         )
+                         conditionalPanel(
+                           condition = "output.tx_is_numeric",
+                           fluidRow(
+                            column(1, style = "display: flex; align-items: flex-end; height: 55px;", textOutput("tx_var_name")),
+                            column(2, align = "center", h5("Mean"), textOutput("tx_mean")),
+                            column(2, align = "center", h5("Median"), textOutput("tx_median")),
+                            column(2, align = "center", h5("Min"), textOutput("tx_min")),
+                            column(2, align = "center", h5("Max"), textOutput("tx_max")),
+                            column(2, align = "center", h5("SD"), textOutput("tx_sd"))
+                         ))
                 ),
                 
                 tabPanel("Products",
@@ -200,13 +206,16 @@ ui <- dashboardPage(
                                      choices = c("savings_account", "credit_card", "personal_loan", "investment_account", "insurance_product", "active_products")),
                          
                          plotOutput("product_plot"),
-                         fluidRow(
-                           column(2, align = "center", h5("Mean"), textOutput("product_mean")),
-                           column(2, align = "center", h5("Median"), textOutput("product_median")),
-                           column(2, align = "center", h5("Min"), textOutput("product_min")),
-                           column(2, align = "center", h5("Max"), textOutput("product_max")),
-                           column(2, align = "center", h5("SD"), textOutput("product_sd"))
-                         )
+                         conditionalPanel(
+                           condition = "output.product_is_numeric",
+                           fluidRow(
+                            column(1, style = "display: flex; align-items: flex-end; height: 55px;", textOutput("product_var_name")),
+                            column(2, align = "center", h5("Mean"), textOutput("product_mean")),
+                            column(2, align = "center", h5("Median"), textOutput("product_median")),
+                            column(2, align = "center", h5("Min"), textOutput("product_min")),
+                            column(2, align = "center", h5("Max"), textOutput("product_max")),
+                            column(2, align = "center", h5("SD"), textOutput("product_sd"))
+                         ))
                 ),
                 
                 tabPanel("App Usage",
@@ -217,13 +226,16 @@ ui <- dashboardPage(
                                      choices = c("app_logins_frequency", "feature_usage_diversity", "bill_payment_user", "auto_savings_enabled")),
                          
                          plotOutput("app_plot"),
-                         fluidRow(
-                           column(2, align = "center", h5("Mean"), textOutput("app_mean")),
-                           column(2, align = "center", h5("Median"), textOutput("app_median")),
-                           column(2, align = "center", h5("Min"), textOutput("app_min")),
-                           column(2, align = "center", h5("Max"), textOutput("app_max")),
-                           column(2, align = "center", h5("SD"), textOutput("app_sd"))
-                         )
+                         conditionalPanel(
+                           condition = "output.usage_is_numeric",
+                           fluidRow(
+                            column(1, style = "display: flex; align-items: flex-end; height: 55px;", textOutput("app_var_name")),
+                            column(2, align = "center", h5("Mean"), textOutput("app_mean")),
+                            column(2, align = "center", h5("Median"), textOutput("app_median")),
+                            column(2, align = "center", h5("Min"), textOutput("app_min")),
+                            column(2, align = "center", h5("Max"), textOutput("app_max")),
+                            column(2, align = "center", h5("SD"), textOutput("app_sd"))
+                         ))
                 ),
                 
                 tabPanel("Satisfaction",
@@ -237,13 +249,16 @@ ui <- dashboardPage(
                                                  )),
                          
                          plotOutput("sat_plot"),
-                         fluidRow(
-                           column(2, align = "center", h5("Mean"), textOutput("sat_mean")),
-                           column(2, align = "center", h5("Median"), textOutput("sat_median")),
-                           column(2, align = "center", h5("Min"), textOutput("sat_min")),
-                           column(2, align = "center", h5("Max"), textOutput("sat_max")),
-                           column(2, align = "center", h5("SD"), textOutput("sat_sd"))
-                         )
+                         conditionalPanel(
+                           condition = "output.sat_is_numeric",
+                           fluidRow(
+                            column(1, style = "display: flex; align-items: flex-end; height: 55px;", textOutput("sat_var_name")),
+                            column(2, align = "center", h5("Mean"), textOutput("sat_mean")),
+                            column(2, align = "center", h5("Median"), textOutput("sat_median")),
+                            column(2, align = "center", h5("Min"), textOutput("sat_min")),
+                            column(2, align = "center", h5("Max"), textOutput("sat_max")),
+                            column(2, align = "center", h5("SD"), textOutput("sat_sd"))
+                         ))
                 )
               )
       ),
