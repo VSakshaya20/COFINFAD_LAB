@@ -1,4 +1,4 @@
-pacman::p_load(shiny, shinydashboard, shinythemes, rlang, RColorBrewer, corrplot, 
+pacman::p_load(shiny, shinydashboard, shinythemes, rlang, RColorBrewer, corrplot, bslib, 
                plotly, tidyverse, ggstatsplot, tools, ggiraph, ggpubr, ggdist, ggridges, ggmosaic, tidytext, cluster, factoextra, fpc, treemap)
 
 controls_ui <- function(id_prefix, vars, default_k = 4) {
@@ -22,16 +22,15 @@ metrics_row_ui <- function(sil_id, ent_id, aicbic_id) {
 }
 
 var_pools <- list(
-  demo  = c("age", "gender", "occupation", "income_bracket",
-            "education_level", "marital_status", "household_size"),
-  trans = c("tx_count", "avg_tx_value", "total_tx_volume",
-            "avg_daily_transactions", "weekend_transaction_ratio"),
-  usage = c("active_products", "app_logins_frequency",
-            "feature_usage_diversity", "bill_payment_user"),
-  sat   = c("satisfaction_score", "product_satisfaction",
-            "app_store_rating"),
+  demo  = c("age", "gender", "location", "income_bracket",
+            "education_level", "marital_status", "occupation", "household_size"),
+  trans = c("tx_count", "avg_tx_value", "total_tx_volume", "avg_daily_transactions", 
+            "weekend_transaction_ratio", "international_transactions"),
+  usage = c("active_products", "app_logins_frequency", "feature_usage_diversity", "bill_payment_user", "auto_savings_enabled"),
+  sat   = c("satisfaction_score", "base_satisfaction", "tx_satisfaction", "product_satisfaction", "app_store_rating"),
   treemap = c("total_tx_volume", "tx_count", "app_logins_frequency") 
 )
+
 
 ui <- dashboardPage(
   skin = "black",
@@ -47,16 +46,16 @@ ui <- dashboardPage(
       
       menuItem("Segmentation", tabName = "seg", startExpanded = FALSE,
                menuSubItem("Demographic", tabName = "demo"),
-               menuSubItem("Behaviour", tabName = "behaviour"),
-               menuSubItem("Product Usage", tabName = "product"),
-               menuSubItem("Satisfaction", tabName = "satisfaction"),
+               menuSubItem("Transactional", tabName = "trans"),
+               menuSubItem("Product Usage", tabName = "usage"),
+               menuSubItem("Satisfaction", tabName = "sat"),
                menuSubItem("Location", tabName = "location")
       )
     )
   ),
   
   dashboardBody(
-      theme = shinythemes::shinytheme("cosmo"),
+      theme = shinythemes::shinytheme("flatly"),
       tags$style(HTML("
   /* Pure white background */
   body, .content-wrapper, .right-side, .main-sidebar {
@@ -144,11 +143,10 @@ ui <- dashboardPage(
                 )
               )
       ),
+      
+      
       tabItem(tabName = "dist",
-              
-              tabBox(
-                width = 12,
-                
+              tabsetPanel(
                 tabPanel("Demographics",
                          h4("Demographics"),
                          p("This section will examine the distribution of demographic variables that describe the characteristics of the customer base. The variables include age, gender, location, income_bracket, education_level, marital_status, occupation, and household_size."),
@@ -183,13 +181,14 @@ ui <- dashboardPage(
                                      choices = c("tx_count", "avg_tx_value", "total_tx_volume",
                                                  "preferred_transaction_type",
                                                  "avg_daily_transactions",
-                                                 "weekend_transaction_ratio")),
+                                                 "weekend_transaction_ratio",
+                                                 "international_transactions")),
                          
                          plotOutput("tx_plot"),
                          conditionalPanel(
                            condition = "output.tx_is_numeric",
                            fluidRow(
-                            column(1, style = "display: flex; align-items: flex-end; height: 55px;", textOutput("tx_var_name")),
+                            column(2, style = "display: flex; align-items: flex-end; height: 55px;", textOutput("tx_var_name")),
                             column(2, align = "center", h5("Mean"), textOutput("tx_mean")),
                             column(2, align = "center", h5("Median"), textOutput("tx_median")),
                             column(2, align = "center", h5("Min"), textOutput("tx_min")),
@@ -209,7 +208,7 @@ ui <- dashboardPage(
                          conditionalPanel(
                            condition = "output.product_is_numeric",
                            fluidRow(
-                            column(1, style = "display: flex; align-items: flex-end; height: 55px;", textOutput("product_var_name")),
+                            column(2, style = "display: flex; align-items: flex-end; height: 55px;", textOutput("product_var_name")),
                             column(2, align = "center", h5("Mean"), textOutput("product_mean")),
                             column(2, align = "center", h5("Median"), textOutput("product_median")),
                             column(2, align = "center", h5("Min"), textOutput("product_min")),
@@ -229,7 +228,7 @@ ui <- dashboardPage(
                          conditionalPanel(
                            condition = "output.usage_is_numeric",
                            fluidRow(
-                            column(1, style = "display: flex; align-items: flex-end; height: 55px;", textOutput("app_var_name")),
+                            column(2, style = "display: flex; align-items: flex-end; height: 55px;", textOutput("app_var_name")),
                             column(2, align = "center", h5("Mean"), textOutput("app_mean")),
                             column(2, align = "center", h5("Median"), textOutput("app_median")),
                             column(2, align = "center", h5("Min"), textOutput("app_min")),
@@ -252,7 +251,7 @@ ui <- dashboardPage(
                          conditionalPanel(
                            condition = "output.sat_is_numeric",
                            fluidRow(
-                            column(1, style = "display: flex; align-items: flex-end; height: 55px;", textOutput("sat_var_name")),
+                            column(2, style = "display: flex; align-items: flex-end; height: 55px;", textOutput("sat_var_name")),
                             column(2, align = "center", h5("Mean"), textOutput("sat_mean")),
                             column(2, align = "center", h5("Median"), textOutput("sat_median")),
                             column(2, align = "center", h5("Min"), textOutput("sat_min")),
@@ -277,8 +276,6 @@ ui <- dashboardPage(
                        h4("Step 2: Statistical Validity"),
                        uiOutput("stat_controls"),
                        actionButton("cda_btn", "Analyse")
-          
-                       
                 ),
                 
                 # RIGHT PANEL (tabs)
@@ -321,61 +318,495 @@ ui <- dashboardPage(
               )
       ),
       
+      # SEGMENTATION
       tabItem(tabName = "demo",
-                      
-                      fluidRow(
-                        column(3,
-                               controls_ui("demo", var_pools$demo, 4)
-                        ),
-                        column(9,
-                               plotOutput("plot_demo", height = "400px"),
-                               metrics_row_ui("sil_demo", "ent_demo", "aicbic_demo")
-                        )
-                      )
-              ),
-      tabItem(tabName = "behaviour",
-                      
-                      fluidRow(
-                        column(3,
-                               controls_ui("trans", var_pools$trans, 5)
-                        ),
-                        column(9,
-                               plotOutput("plot_trans", height = "400px"),
-                               metrics_row_ui("sil_trans", "ent_trans", "aicbic_trans")
-                        )
-                      )
-              ),
-      tabItem(tabName = "product",
               fluidRow(
-                column(3,
-                       controls_ui("usage", var_pools$usage, 3)
-                ),
+                column(3, controls_ui("demo", var_pools$demo, 4)),
                 column(9,
-                       plotOutput("plot_usage", height = "400px"),
-                       metrics_row_ui("sil_usage", "ent_usage", "aicbic_usage")
+                       tabsetPanel(
+                         tabPanel("Cluster Plot",
+                                  h4("Cluster Plot"),
+                                  p("This plot projects all customers onto a 2D space using Principal Component Analysis (PCA),
+                                  where each point represents a customer coloured by their assigned cluster. The axes (Dim1,
+                                  Dim2) are linear combinations of the input variables, and the percentage shown indicates
+                                    how much of the total variance each dimension explains."),
+                                  
+                                  plotOutput("plot_demo", height = "350px"),
+                                  metrics_row_ui("sil_demo", "ent_demo", "aicbic_demo"),
+                                  br(), br(),
+                                  
+                                  tags$details(
+                                    style = "margin-top: 10px;",
+                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                 "Click here to understand how to interpret the plot"
+                                                 ),
+                                    tags$ul(
+                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                      tags$li("Well-separated, compact clusters indicate strong, meaningful segmentation"),
+                                      tags$li("Heavily overlapping clusters suggest the variables may not clearly distinguish customer groups"),
+                                      tags$li("Silhouette Width: Higher is better (max = 1) — values above 0.5 indicate strong cluster separation, 0.25–0.5 is moderate."),
+                                      tags$li("Entropy: Lower is better — indicates meaningfully uneven cluster sizes rather than arbitrary equal splits."),
+                                      tags$li("AIC / BIC: Lower is better — a drop as k increases suggests real structure; a plateau suggests overfitting. N/A for CLARA-based clustering.")
+                                      )
+                                    )
+                                  ),
+                         
+                         tabPanel("Cluster Composition",
+                                  h4("Cluster Composition"),
+                                  p("This bar chart shows the proportion of customers assigned to each cluster, helping you assess
+                                    whether the segmentation produces meaningfully sized groups."),
+                                  
+                                  plotOutput("plot_demo_bar", height = "350px"),
+                                  
+                                  tags$details(
+                                    style = "margin-top: 10px;",
+                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                 "Click here to understand how to interpret the plot"
+                                                 ),
+                                    tags$ul(
+                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                      tags$li("Balanced clusters (roughly equal proportions) suggest the algorithm has found evenly distributed natural groupings"),
+                                      tags$li("A dominant cluster (e.g. >40%) may indicate a large average segment that absorbs customers who do not strongly belong elsewhere — consider increasing k to break it down further"),
+                                      tags$li("Very small clusters (<10%) may represent genuine niche segments or outliers — inspect their profiles carefully before acting on them")
+                                      )
+                                    )
+                                  ),
+                         
+                         tabPanel("Within-Cluster Profiles",
+                                  h4("Within-Cluster Profiles"),
+                                  p("This heatmap displays the mean value of each variable for each cluster. The colour reflects
+                                  the scaled mean across clusters — red indicates this cluster scores relatively high on that
+                                    variable, blue indicates relatively low. The raw mean is shown as a number inside each cell."),
+                                  
+                                  plotOutput("plot_demo_heatmap", height = "350px"),
+                                  
+                                  tags$details(
+                                    style = "margin-top: 10px;",
+                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                 "Click here to understand how to interpret the plot"
+                                                 ),
+                                    tags$ul(
+                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                      tags$li("Red cells identify the defining characteristics of a cluster — what makes it distinct"),
+                                      tags$li("Blue cells highlight what a cluster lacks relative to others"),
+                                      tags$li("Variables with little colour variation across all clusters (all near white) are not driving the segmentation and could potentially be removed"),
+                                      tags$li("Use this plot to assign meaningful labels to clusters (e.g. High Spenders, Weekend Users)")
+                                      )
+                                    )
+                                  ),
+                         
+                         tabPanel("Cluster Evaluation",
+                                  h4("Cluster Evaluation"),
+                                  p("The silhouette plot measures how well each customer fits their assigned cluster. Each bar 
+                                  (or filled region) represents individual customers within a cluster, and the red dashed line 
+                                    marks the overall average silhouette width."),
+                                  
+                                  plotOutput("plot_demo_sil", height = "300px"),
+                                  
+                                  tags$details(
+                                    style = "margin-top: 10px;",
+                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                 "Click here to understand how to interpret the plot"
+                                                 ),
+                                    tags$ul(
+                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                      tags$li("Scores close to 1 indicate a customer is well-matched to their cluster and clearly separated from neighbouring clusters"),
+                                      tags$li("Negative scores suggest the customer may have been assigned to the wrong cluster"),
+                                      tags$li("Clusters where most members exceed the average line are well-defined; clusters with many members falling below it may benefit from a different value of k"),
+                                      tags$li("A mean silhouette width above 0.5 reflects strong structure; 0.25–0.5 is moderate; below 0.25 suggests weak or arbitrary groupings")
+                                      )
+                                    )
+                                  )
+                         )
+                       )
                 )
-              )),
-      tabItem(tabName = "satisfaction",
+              ),
+      
+      tabItem(tabName = "trans",
               fluidRow(
-                column(3,
-                       controls_ui("sat", var_pools$sat, 3)
-                ),
+                column(3, controls_ui("trans", var_pools$trans, 4)),
                 column(9,
-                       plotOutput("plot_sat", height = "400px"),
-                       metrics_row_ui("sil_sat", "ent_sat", "aicbic_sat")
+                       tabsetPanel(
+                         tabPanel("Cluster Plot",
+                                  h4("Cluster Plot"),
+                                  p("This plot projects all customers onto a 2D space using Principal Component Analysis (PCA),
+                                  where each point represents a customer coloured by their assigned cluster. The axes (Dim1,
+                                  Dim2) are linear combinations of the input variables, and the percentage shown indicates
+                                    how much of the total variance each dimension explains."),
+                                  
+                                  plotOutput("plot_trans", height = "350px"),
+                                  metrics_row_ui("sil_trans", "ent_trans", "aicbic_trans"),
+                                  
+                                  tags$details(
+                                    style = "margin-top: 10px;",
+                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                 "Click here to understand how to interpret the plot"
+                                                 ),
+                                    tags$ul(
+                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                      tags$li("Well-separated, compact clusters indicate strong, meaningful segmentation"),
+                                      tags$li("Heavily overlapping clusters suggest the variables may not clearly distinguish customer groups"),
+                                      tags$li("Silhouette Width: Higher is better (max = 1) — values above 0.5 indicate strong cluster separation, 0.25–0.5 is moderate."),
+                                      tags$li("Entropy: Lower is better — indicates meaningfully uneven cluster sizes rather than arbitrary equal splits."),
+                                      tags$li("AIC / BIC: Lower is better — a drop as k increases suggests real structure; a plateau suggests overfitting. N/A for CLARA-based clustering.")
+                                      )
+                                    )
+                                  ),
+                         
+                         tabPanel("Cluster Composition",
+                                  h4("Cluster Composition"),
+                                  p("This bar chart shows the proportion of customers assigned to each cluster, helping you assess
+                                    whether the segmentation produces meaningfully sized groups."),
+                                  
+                                  plotOutput("plot_trans_bar", height = "350px"),
+                                  
+                                  tags$details(
+                                    style = "margin-top: 10px;",
+                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                 "Click here to understand how to interpret the plot"
+                                                 ),
+                                    tags$ul(
+                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                      tags$li("Balanced clusters (roughly equal proportions) suggest the algorithm has found evenly distributed natural groupings"),
+                                      tags$li("A dominant cluster (e.g. >40%) may indicate a large average segment that absorbs customers who do not strongly belong elsewhere — consider increasing k to break it down further"),
+                                      tags$li("Very small clusters (<10%) may represent genuine niche segments or outliers — inspect their profiles carefully before acting on them")
+                                      )
+                                    )
+                                  ),
+                         
+                         tabPanel("Within-Cluster Profiles",
+                                  h4("Within-Cluster Profiles"),
+                                  p("This heatmap displays the mean value of each variable for each cluster. The colour reflects
+                                  the scaled mean across clusters — red indicates this cluster scores relatively high on that
+                                    variable, blue indicates relatively low. The raw mean is shown as a number inside each cell."),
+                                  
+                                  plotOutput("plot_trans_heatmap", height = "350px"),
+                                  
+                                  tags$details(
+                                    style = "margin-top: 10px;",
+                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                 "Click here to understand how to interpret the plot"
+                                                 ),
+                                    tags$ul(
+                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                      tags$li("Red cells identify the defining characteristics of a cluster — what makes it distinct"),
+                                      tags$li("Blue cells highlight what a cluster lacks relative to others"),
+                                      tags$li("Variables with little colour variation across all clusters (all near white) are not driving the segmentation and could potentially be removed"),
+                                      tags$li("Use this plot to assign meaningful labels to clusters (e.g. High Spenders, Weekend Users)")
+                                      )
+                                    )
+                                  ),
+                         
+                         tabPanel("Cluster Evaluation",
+                                  h4("Cluster Evaluation"),
+                                  fluidRow(
+                                    column(6,
+                                    p("The elbow plot helps determine the optimal number of clusters (k) by showing how total 
+                                    within-cluster sum of squares (WSS) decreases as k increases. A lower WSS indicates that 
+                                      customers within each cluster are more similar to one another."),
+                                    
+                                    plotOutput("plot_trans_elbow", height = "300px"),
+                                    
+                                    tags$details(
+                                      style = "margin-top: 10px;",
+                                      tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                   "Click here to understand how to interpret the plot"
+                                                   ),
+                                      tags$ul(
+                                        style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                        tags$li("A sharp drop in WSS as k increases suggests each additional cluster is capturing meaningful structure in the data"),
+                                        tags$li("The elbow — where the rate of decrease slows and the curve begins to flatten — indicates the optimal k, beyond which adding more clusters yields diminishing returns"),
+                                        tags$li("A gradual curve with no clear elbow suggests the data does not have strong natural cluster structure, and any choice of k is somewhat arbitrary"),
+                                        tags$li("Use this plot alongside the silhouette plot to confirm your choice of k — the optimal k from the elbow plot should ideally also correspond to a higher silhouette width")
+                                        )
+                                      )
+                                    ),
+                                    
+                                    column(6,
+                                    p("The silhouette plot measures how well each customer fits their assigned cluster. Each bar 
+                                    (or filled region) represents individual customers within a cluster, and the red dashed line 
+                                      marks the overall average silhouette width."),
+                                    
+                                    plotOutput("plot_trans_sil", height = "300px"),
+                                    
+                                    tags$details(
+                                      style = "margin-top: 10px;",
+                                      tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                   "Click here to understand how to interpret the plot"
+                                                   ),
+                                      tags$ul(
+                                        style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                        tags$li("Scores close to 1 indicate a customer is well-matched to their cluster and clearly separated from neighbouring clusters"),
+                                        tags$li("Negative scores suggest the customer may have been assigned to the wrong cluster"),
+                                        tags$li("Clusters where most members exceed the average line are well-defined; clusters with many members falling below it may benefit from a different value of k"),
+                                        tags$li("A mean silhouette width above 0.5 reflects strong structure; 0.25–0.5 is moderate; below 0.25 suggests weak or arbitrary groupings")
+                                        )
+                                    )
+                                    )
+                                  )
+                         )
+                       )
                 )
-              )),
+              )
+      ),
+      
+      tabItem(tabName = "usage",
+              fluidRow(
+                column(3, controls_ui("usage", var_pools$usage, 4)),
+                column(9,
+                       tabsetPanel(
+                         tabPanel("Cluster Plot",
+                                  h4("Cluster Plot"),
+                                  p("This plot projects all customers onto a 2D space using Principal Component Analysis (PCA),
+                                  where each point represents a customer coloured by their assigned cluster. The axes (Dim1,
+                                  Dim2) are linear combinations of the input variables, and the percentage shown indicates
+                                    how much of the total variance each dimension explains."),
+                                            
+                                   plotOutput("plot_usage", height = "350px"),
+                                   metrics_row_ui("sil_usage", "ent_usage", "aicbic_usage"),
+                                            
+                                  tags$details(
+                                    style = "margin-top: 10px;",
+                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                           "Click here to understand how to interpret the plot"
+                                                 ),
+                                   tags$ul(
+                                     style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                     tags$li("Well-separated, compact clusters indicate strong, meaningful segmentation"),
+                                     tags$li("Heavily overlapping clusters suggest the variables may not clearly distinguish customer groups"),
+                                     tags$li("Silhouette Width: Higher is better (max = 1) — values above 0.5 indicate strong cluster separation, 0.25–0.5 is moderate."),
+                                     tags$li("Entropy: Lower is better — indicates meaningfully uneven cluster sizes rather than arbitrary equal splits."),
+                                     tags$li("AIC / BIC: Lower is better — a drop as k increases suggests real structure; a plateau suggests overfitting. N/A for CLARA-based clustering.")
+                                     )
+                                   )
+                                  ),
+                         tabPanel("Cluster Composition",
+                                  h4("Cluster Composition"),
+                                  p("This bar chart shows the proportion of customers assigned to each cluster, helping you assess
+                                    whether the segmentation produces meaningfully sized groups."),
+                                  
+                                  plotOutput("plot_usage_bar", height = "350px"),
+                                  
+                                  tags$details(
+                                    style = "margin-top: 10px;",
+                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                 "Click here to understand how to interpret the plot"
+                                                 ),
+                                    tags$ul(
+                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                      tags$li("Balanced clusters (roughly equal proportions) suggest the algorithm has found evenly distributed natural groupings"),
+                                      tags$li("A dominant cluster (e.g. >40%) may indicate a large average segment that absorbs customers who do not strongly belong elsewhere — consider increasing k to break it down further"),
+                                      tags$li("Very small clusters (<10%) may represent genuine niche segments or outliers — inspect their profiles carefully before acting on them")
+                                      )
+                                    )
+                                  ),
+                         
+                         tabPanel("Within-Cluster Profiles",
+                                  h4("Within-Cluster Profiles"),
+                                  p("This heatmap displays the mean value of each variable for each cluster. The colour reflects
+                                  the scaled mean across clusters — red indicates this cluster scores relatively high on that
+                                    variable, blue indicates relatively low. The raw mean is shown as a number inside each cell."),
+                                  
+                                  plotOutput("plot_usage_heatmap", height = "350px"),
+                                  
+                                  tags$details(
+                                    style = "margin-top: 10px;",
+                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                 "Click here to understand how to interpret the plot"
+                                                 ),
+                                    tags$ul(
+                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                      tags$li("Red cells identify the defining characteristics of a cluster — what makes it distinct"),
+                                      tags$li("Blue cells highlight what a cluster lacks relative to others"),
+                                      tags$li("Variables with little colour variation across all clusters (all near white) are not driving the segmentation and could potentially be removed"),
+                                      tags$li("Use this plot to assign meaningful labels to clusters (e.g. High Spenders, Weekend Users)")
+                                      )
+                                  )
+                         ),
+                         
+                         tabPanel("Cluster Evaluation",
+                                  h4("Cluster Evaluation"),
+                                  p("The silhouette plot measures how well each customer fits their assigned cluster. Each bar 
+                                  (or filled region) represents individual customers within a cluster, and the red dashed line 
+                                    marks the overall average silhouette width."),
+                                  
+                                  plotOutput("plot_usage_sil", height = "300px"),
+                                  
+                                  tags$details(
+                                    style = "margin-top: 10px;",
+                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                 "Click here to understand how to interpret the plot"
+                                                 ),
+                                    tags$ul(
+                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                      tags$li("Scores close to 1 indicate a customer is well-matched to their cluster and clearly separated from neighbouring clusters"),
+                                      tags$li("Negative scores suggest the customer may have been assigned to the wrong cluster"),
+                                      tags$li("Clusters where most members exceed the average line are well-defined; clusters with many members falling below it may benefit from a different value of k"),
+                                      tags$li("A mean silhouette width above 0.5 reflects strong structure; 0.25–0.5 is moderate; below 0.25 suggests weak or arbitrary groupings")
+                                      )
+                                    )
+                                  )
+                         )
+                       )
+                )
+              ),
+      
+      
+      tabItem(tabName = "sat",
+              fluidRow(
+                column(3, controls_ui("sat", var_pools$sat, 4)),
+                column(9,
+                       tabsetPanel(
+                         tabPanel("Cluster Plot",
+                                  h4("Cluster Plot"),
+                                  p("This plot projects all customers onto a 2D space using Principal Component Analysis (PCA),
+                                  where each point represents a customer coloured by their assigned cluster. The axes (Dim1,
+                                  Dim2) are linear combinations of the input variables, and the percentage shown indicates
+                                    how much of the total variance each dimension explains."),
+                                  
+                                  plotOutput("plot_sat", height = "350px"),
+                                  metrics_row_ui("sil_sat", "ent_sat", "aicbic_sat"),
+                                  
+                                  tags$details(
+                                    style = "margin-top: 10px;",
+                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                 "Click here to understand how to interpret the plot"
+                                                 ),
+                                    tags$ul(
+                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                      tags$li("Well-separated, compact clusters indicate strong, meaningful segmentation"),
+                                      tags$li("Heavily overlapping clusters suggest the variables may not clearly distinguish customer groups"),
+                                      tags$li("Silhouette Width: Higher is better (max = 1) — values above 0.5 indicate strong cluster separation, 0.25–0.5 is moderate."),
+                                      tags$li("Entropy: Lower is better — indicates meaningfully uneven cluster sizes rather than arbitrary equal splits."),
+                                      tags$li("AIC / BIC: Lower is better — a drop as k increases suggests real structure; a plateau suggests overfitting. N/A for CLARA-based clustering.")
+                                      )
+                                  )
+                         ),
+                         
+                         tabPanel("Cluster Composition",
+                                  h4("Cluster Composition"),
+                                  p("This bar chart shows the proportion of customers assigned to each cluster, helping you assess
+                                    whether the segmentation produces meaningfully sized groups."),
+                                  
+                                  plotOutput("plot_sat_bar", height = "350px"),
+                                  
+                                  tags$details(
+                                    style = "margin-top: 10px;",
+                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                 "Click here to understand how to interpret the plot"
+                                                 ),
+                                    tags$ul(
+                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                      tags$li("Balanced clusters (roughly equal proportions) suggest the algorithm has found evenly distributed natural groupings"),
+                                      tags$li("A dominant cluster (e.g. >40%) may indicate a large average segment that absorbs customers who do not strongly belong elsewhere — consider increasing k to break it down further"),
+                                      tags$li("Very small clusters (<10%) may represent genuine niche segments or outliers — inspect their profiles carefully before acting on them")
+                                      )
+                                    )
+                                  ),
+                         
+                         tabPanel("Within-Cluster Profiles",
+                                  h4("Within-Cluster Profiles"),
+                                  p("This heatmap displays the mean value of each variable for each cluster. The colour reflects
+                                  the scaled mean across clusters — red indicates this cluster scores relatively high on that
+                                    variable, blue indicates relatively low. The raw mean is shown as a number inside each cell."),
+                                  
+                                  plotOutput("plot_sat_heatmap", height = "350px"),
+                                  
+                                  tags$details(
+                                    style = "margin-top: 10px;",
+                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                 "Click here to understand how to interpret the plot"
+                                                 ),
+                                    tags$ul(
+                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                      tags$li("Red cells identify the defining characteristics of a cluster — what makes it distinct"),
+                                      tags$li("Blue cells highlight what a cluster lacks relative to others"),
+                                      tags$li("Variables with little colour variation across all clusters (all near white) are not driving the segmentation and could potentially be removed"),
+                                      tags$li("Use this plot to assign meaningful labels to clusters (e.g. High Spenders, Weekend Users)")
+                                      )
+                                    )
+                                  ),
+                         
+                         tabPanel("Cluster Evaluation",
+                                  h4("Cluster Evaluation"),
+                                  fluidRow(
+                                    column(6,
+                                    p("The elbow plot helps determine the optimal number of clusters (k) by showing how total 
+                                    within-cluster sum of squares (WSS) decreases as k increases. A lower WSS indicates that 
+                                      customers within each cluster are more similar to one another."),
+                                    
+                                    plotOutput("plot_sat_elbow", height = "300px"),
+                                    
+                                    tags$details(
+                                      style = "margin-top: 10px;",
+                                      tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                   "Click here to understand how to interpret the plot"
+                                                   ),
+                                      tags$ul(
+                                        style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                        tags$li("A sharp drop in WSS as k increases suggests each additional cluster is capturing meaningful structure in the data"),
+                                        tags$li("The elbow — where the rate of decrease slows and the curve begins to flatten — indicates the optimal k, beyond which adding more clusters yields diminishing returns"),
+                                        tags$li("A gradual curve with no clear elbow suggests the data does not have strong natural cluster structure, and any choice of k is somewhat arbitrary"),
+                                        tags$li("Use this plot alongside the silhouette plot to confirm your choice of k — the optimal k from the elbow plot should ideally also correspond to a higher silhouette width")
+                                        )
+                                      )
+                                    ),
+                                    
+                                    column(6,
+                                    p("The silhouette plot measures how well each customer fits their assigned cluster. Each bar 
+                                    (or filled region) represents individual customers within a cluster, and the red dashed line 
+                                      marks the overall average silhouette width."),
+                                    
+                                    plotOutput("plot_sat_sil", height = "300px"),
+                                    
+                                    tags$details(
+                                      style = "margin-top: 10px;",
+                                      tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                   "Click here to understand how to interpret the plot"
+                                                   ),
+                                      tags$ul(
+                                        style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                        tags$li("Scores close to 1 indicate a customer is well-matched to their cluster and clearly separated from neighbouring clusters"),
+                                        tags$li("Negative scores suggest the customer may have been assigned to the wrong cluster"),
+                                        tags$li("Clusters where most members exceed the average line are well-defined; clusters with many members falling below it may benefit from a different value of k"),
+                                        tags$li("A mean silhouette width above 0.5 reflects strong structure; 0.25–0.5 is moderate; below 0.25 suggests weak or arbitrary groupings")
+                                        )
+                                      )
+                                    )
+                                  )
+                         )
+                       )
+                )
+              )
+      ),
+      
       tabItem(tabName = "location",
               fluidRow(
-                column(3,
-                       controls_ui("treemap", var_pools$treemap, 4)  
-                ),
+                column(3, controls_ui("treemap", var_pools$treemap, 4)),
                 column(9,
-                       plotOutput("treemap", height = "500px")
+                       h4("Treemap of customer segments across Colombian cities, sized by total transaction volume"),
+                       p("Each large rectangle represents a city, and within each city, smaller rectangles show the breakdown of customer personas derived from 
+                         k-means clustering, labelled with the persona name and average customer age."),
+                       
+                       plotOutput("treemap"),
+                       uiOutput("treemap_summary"),
+                       
+                       tags$details(
+                         style = "margin-top: 10px;",
+                         tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0; list-style: disclosure-closed;",
+                                                "Click here to understand how to interpret the treemap"),
+                         tags$ul(
+                           style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                           tags$li("Larger city rectangles indicate higher transaction volume markets — prioritise these for resource allocation"),
+                           tags$li("The dominant persona in a city (largest sub-rectangle) reflects the primary customer profile in that market"),
+                           tags$li("Cities where high-value personas dominate despite smaller overall size may represent untapped premium markets"),
+                           tags$li("Uniform persona distribution across cities suggests segments are nationally distributed rather than geographically concentrated"),
+                           tags$li("Adjust the number of clusters (k) and variables on the left to explore different segmentation scenarios")
+                           )
+                         )
+                       )
                 )
               )
       )
-      
-    )
   )
 )

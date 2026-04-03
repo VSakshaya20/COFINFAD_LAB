@@ -31,6 +31,82 @@ aic_bic_text <- function(model, data) {
   paste0("AIC: ", round(aic,1), " | BIC: ", round(bic,1))
 }
 
+# Cluster Composition Plots
+plot_cluster_bar <- function(clusters) {
+  data.frame(cluster = factor(clusters)) %>%
+    count(cluster) %>%
+    mutate(prop = n / sum(n)) %>%
+    ggplot(aes(x = cluster, y = prop, fill = cluster)) +
+    geom_col(show.legend = FALSE) +
+    geom_text(aes(label = scales::percent(prop, accuracy = 0.1)),
+              vjust = -0.4, size = 4) +
+    scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +
+    labs(title = "Cluster Size Distribution", x = "Cluster", y = "Proportion") +
+    theme_minimal()
+}
+
+# Within-Cluster Profiles
+plot_heatmap <- function(clusters, data) {
+  # encode any character/factor columns numerically
+  data_encoded <- data %>%
+    mutate(across(where(is.character), ~ as.numeric(factor(.x)))) %>%
+    mutate(across(where(is.factor),    ~ as.numeric(.x)))
+  
+  data.frame(cluster = factor(clusters), data_encoded) %>%
+    group_by(cluster) %>%
+    summarise(across(everything(), mean), .groups = "drop") %>%
+    pivot_longer(-cluster, names_to = "variable", values_to = "value") %>%
+    group_by(variable) %>%
+    mutate(value_scaled = scale(value)[,1]) %>%
+    ggplot(aes(x = variable, y = cluster, fill = value_scaled)) +
+    geom_tile(color = "white") +
+    geom_text(aes(label = round(value, 2)), size = 3) +
+    scale_fill_gradient2(low = "steelblue", mid = "white", high = "tomato", midpoint = 0) +
+    labs(title = "Cluster Centroid Heatmap", x = NULL, y = "Cluster", fill = "Scaled\nMean") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 30, hjust = 1))
+}
+
+# Evaluation
+plot_elbow <- function(data, max_k = 10) {
+  wss <- sapply(1:max_k, function(k) {
+    kmeans(data, centers = k, nstart = 10)$tot.withinss
+  })
+  data.frame(k = 1:max_k, wss = wss) %>%
+    ggplot(aes(x = k, y = wss)) +
+    geom_line(color = "steelblue", linewidth = 1) +
+    geom_point(size = 3, color = "steelblue") +
+    scale_x_continuous(breaks = 1:max_k) +
+    labs(title = "Elbow Plot", x = "Number of Clusters (k)",
+         y = "Total Within-Cluster SS") +
+    theme_minimal()
+}
+
+plot_silhouette <- function(model, data) {
+  sil <- silhouette(model$cluster, dist(data))
+  fviz_silhouette(sil) +
+    labs(title = "Silhouette Plot") +
+    theme_minimal()
+}
+
+plot_silhouette_clara <- function(model) {
+  sil <- model$silinfo$widths
+  data.frame(
+    obs     = seq_len(nrow(sil)),
+    cluster = factor(sil[, 1]),
+    width   = sil[, 3]
+  ) %>%
+    arrange(cluster, width) %>%
+    mutate(obs = row_number()) %>%
+    ggplot(aes(x = obs, y = width, fill = cluster)) +
+    geom_col(show.legend = TRUE) +
+    geom_hline(yintercept = mean(sil[, 3]), linetype = "dashed", color = "red") +
+    coord_flip() +
+    labs(title = "Silhouette Plot", x = NULL,
+         y = "Silhouette Width", fill = "Cluster") +
+    theme_minimal()
+}
+
 function(input, output, session) {
   
   demo_var_data    <- reactive({ df[[input$demo_var]] })
@@ -175,6 +251,7 @@ function(input, output, session) {
       ggplot(df, aes_string(x = var_name)) +
         geom_bar(fill = "#2ecc71") +
         geom_text(stat = "count", aes(label = ..count..), vjust = -0.5) +
+        labs(title = var_name, x = "", y = "Count") +
         theme_minimal()
     }
   })
@@ -208,6 +285,7 @@ function(input, output, session) {
     ggplot(df, aes_string(x = var_name)) +
       geom_bar(fill = "#e67e22") +
       geom_text(stat = "count", aes(label = ..count..), vjust = -0.5) +
+      labs(title = var_name, x = "", y = "Count") +
       theme_minimal()
   })
   
@@ -253,6 +331,7 @@ function(input, output, session) {
     ggplot(df, aes_string(x = var_name)) +
       geom_bar(fill = "#1abc9c") +
       geom_text(stat = "count", aes(label = ..count..), vjust = -0.5) +
+      labs(title = var_name, x = "", y = "Count") +
       theme_minimal()
   })
   
@@ -301,18 +380,21 @@ function(input, output, session) {
       ggplot(df, aes_string(x = var_name)) +
         geom_bar(fill = "#9b59b6") +
         geom_text(stat = "count", aes(label = ..count..), vjust = -0.5) +
+        labs(title = var_name, x = "", y = "Count") +
         theme_minimal()
       
     } else if(is.numeric(df[[var_name]])) {
       
       ggplot(df, aes_string(x = var_name)) +
         geom_histogram(fill = "#9b59b6", bins = 30) +
+        labs(title = var_name, x = "", y = "Frequency") +
         theme_minimal()
       
     } else {
       
       ggplot(df, aes_string(x = var_name)) +
         geom_bar(fill = "#9b59b6") +
+        labs(title = var_name, x = "", y = "Count") +
         theme_minimal()
     }
   })
@@ -400,12 +482,12 @@ function(input, output, session) {
         )
       } else if(type == "Boxplot") {
         ggplot(df, aes(x = .data[[x]], y = .data[[y]])) +
-          geom_boxplot(fill = "#3498db") +
+          geom_boxplot(fill = "#9e68aa", outliers = FALSE) +
           coord_flip()
       }
       else if(type == "Violin") {
         ggplot(df, aes(x = .data[[x]], y = .data[[y]])) +
-          geom_violin(fill = "#3498db") +
+          geom_violin(fill = "#25238d") +
           coord_flip()
       }
       else if(type == "Raincloud") {
@@ -530,6 +612,17 @@ function(input, output, session) {
     fviz_cluster(demo_res())
   })
   
+  output$plot_demo_bar <- renderPlot({
+    plot_cluster_bar(demo_res()$clustering)
+  })
+  output$plot_demo_heatmap <- renderPlot({
+    plot_heatmap(demo_res()$clustering, df[, input$demo_vars])
+  })
+
+  output$plot_demo_sil <- renderPlot({
+    plot_silhouette_clara(demo_res())
+  })
+  
   output$sil_demo <- renderText(round(demo_res()$silinfo$avg.width,4))
   output$ent_demo <- renderText(calc_entropy(demo_res()$clustering))
   output$aicbic_demo <- renderText("N/A")
@@ -544,6 +637,22 @@ function(input, output, session) {
     fviz_cluster(trans_res(), data = scale(df[, input$trans_vars]))
   })
   
+  output$plot_trans_bar <- renderPlot({
+    plot_cluster_bar(trans_res()$cluster)
+  })
+  
+  output$plot_trans_heatmap <- renderPlot({
+    plot_heatmap(trans_res()$cluster, as.data.frame(scale(df[, input$trans_vars])))
+  })
+  
+  output$plot_trans_elbow <- renderPlot({
+    plot_elbow(scale(df[, input$trans_vars]))
+  })
+  
+  output$plot_trans_sil <- renderPlot({
+    plot_silhouette(trans_res(), scale(df[, input$trans_vars]))
+  })
+  
   output$sil_trans <- renderText(
     calc_sil_kmeans(trans_res(), scale(df[, input$trans_vars]))
   )
@@ -552,13 +661,23 @@ function(input, output, session) {
     aic_bic_text(trans_res(), scale(df[, input$trans_vars]))
   )
   
-  # USAGE
+  # PRODUCT USAGE
   usage_res <- reactive({
     clara(df[, input$usage_vars], k = input$usage_k)
   })
   
   output$plot_usage <- renderPlot({
     fviz_cluster(usage_res())
+  })
+  
+  output$plot_usage_bar <- renderPlot({
+    plot_cluster_bar(usage_res()$clustering)
+  })
+  output$plot_usage_heatmap <- renderPlot({
+    plot_heatmap(usage_res()$clustering, df[, input$usage_vars])
+  })
+  output$plot_usage_sil <- renderPlot({
+    plot_silhouette_clara(usage_res())
   })
   
   output$sil_usage <- renderText(round(usage_res()$silinfo$avg.width,4))
@@ -575,6 +694,19 @@ function(input, output, session) {
     fviz_cluster(sat_res(), data = scale(df[, input$sat_vars]))
   })
   
+  output$plot_sat_bar <- renderPlot({
+    plot_cluster_bar(sat_res()$cluster)
+  })
+  output$plot_sat_heatmap <- renderPlot({
+    plot_heatmap(sat_res()$cluster, as.data.frame(scale(df[, input$sat_vars])))
+  })
+  output$plot_sat_elbow <- renderPlot({
+    plot_elbow(scale(df[, input$sat_vars]))
+  })
+  output$plot_sat_sil <- renderPlot({
+    plot_silhouette(sat_res(), scale(df[, input$sat_vars]))
+  })
+  
   output$sil_sat <- renderText(
     calc_sil_kmeans(sat_res(), scale(df[, input$sat_vars]))
   )
@@ -582,6 +714,7 @@ function(input, output, session) {
   output$aicbic_sat <- renderText(
     aic_bic_text(sat_res(), scale(df[, input$sat_vars]))
   )
+  
   
   # LOCATION TREEMAP
   cluster_data_reactive <- reactive({
@@ -647,7 +780,7 @@ function(input, output, session) {
       group_by(location, segment_id) %>%
       summarise(total_vol = sum(total_tx_volume, na.rm = TRUE), .groups = "drop") %>%
       left_join(summ, by = "segment_id") %>%
-      mutate(label_text = paste0(persona, "\\nAvg Age: ", avg_age))
+      mutate(label_text = paste0(persona, " | Avg Age: ", avg_age))
   })
   
   output$treemap <- renderPlot({
@@ -659,15 +792,77 @@ function(input, output, session) {
             vSize = "total_vol",
             vColor = "location",
             type = "index",
-            title = paste("Geographic Segments by", paste(input$treemap_vars, collapse = ", "), "(k =", input$treemap_k, ")"),
+            title = paste("Customer Personas by City and Transaction Volume", "(k =", input$treemap_k, ")"),
             palette = "Set3",
-            fontsize.labels = c(15, 8),          
-            fontcolor.labels = c("black", "darkslategrey"),
+            fontsize.labels = c(14, 9),          
+            fontcolor.labels = c("black", "black"),
             border.col = c("black", "white"),
             border.lwds = c(4, 1),
             align.labels = list(c("center", "center"), c("left", "top"))
     )
-  }, height = 600, width = 900)
+  }, height = 400, width = 800)
+
+  output$treemap_summary <- renderUI({
+    summ  <- segment_summary_reactive()
+    final <- final_df_reactive()
+    
+    # Top city by volume
+    top_city <- final %>%
+      group_by(location) %>%
+      summarise(vol = sum(total_tx_volume, na.rm = TRUE)) %>%
+      slice_max(vol, n = 1) %>%
+      pull(location)
+    
+    # Most common persona nationally
+    top_persona <- summ %>%
+      left_join(
+        final %>% count(segment_id),
+        by = "segment_id"
+      ) %>%
+      slice_max(n, n = 1) %>%
+      pull(persona)
+    
+    # Largest and smallest segment
+    largest  <- summ %>% slice_max(avg_vol, n = 1) %>% pull(persona)
+    smallest <- summ %>% slice_min(avg_vol, n = 1) %>% pull(persona)
+    
+    # Average age overall
+    avg_age <- round(mean(final$age, na.rm = TRUE), 1)
+    
+    # No. of cities
+    n_cities <- n_distinct(final$location)
+    
+    tagList(
+      h4("Key Insights"),
+      fluidRow(
+        column(3,
+               div(style = "background: #dbeafe; border-radius: 8px; padding: 8px 8px; margin: 4px; min-height: 100px;",
+                   tags$b("Largest Market"),
+                   tags$p(style = "margin-bottom: 6px;", top_city),
+                   tags$b("Cities Covered"),
+                   tags$p(style = "margin-bottom: 0;", n_cities)
+               )
+        ),
+        column(3,
+               div(style = "background: #dcfce7; border-radius: 8px; padding: 8px 8px; margin: 4px; min-height: 100px;",
+                   tags$b("Most Common Persona"),
+                   tags$p(style = "margin-bottom: 6px;", top_persona),
+                   tags$b("Average Customer Age"),
+                   tags$p(style = "margin-bottom: 0;", paste(avg_age, "years"))
+               )
+        ),
+        column(4,
+               div(style = "background: #fef9c3; border-radius: 8px; padding: 8px 8px; margin: 4px; min-height: 100px;",
+                   tags$b("Highest Average Volume Segment"),
+                   tags$p(style = "margin-bottom: 6px;", largest),
+                   tags$b("Lowest Average Volume Segment"),
+                   tags$p(style = "margin-bottom: 0;", smallest)
+               )
+            )
+        )
+      )
+  })
+  
   
 }
 
