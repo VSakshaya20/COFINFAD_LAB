@@ -93,20 +93,22 @@ ui <- dashboardPage(
                 
                 # RIGHT: Key Variables
                 box(
-                  title = "Key Variables",
+                  title = "Customer Overview",
                   width = 9,
                   solidHeader = TRUE,
                   
                   fluidRow(
                     column(4, 
+                           box(width = 12, title = "Number of Customers",
+                               "48,723")
+                    ),
+                    column(4, 
                            box(width = 12, title = "Age",
-                               "Mean: 35", br(),
-                               "Median: 33")
+                               "Mean: 44.5 years")
                     ),
                     column(4, 
                            box(width = 12, title = "Gender",
-                               "Mean: 50k", br(),
-                               "Median: 45k")
+                               "Female: 49% | Male: 49%")
                     )
                   ),
                   
@@ -115,18 +117,15 @@ ui <- dashboardPage(
                   fluidRow(
                     column(4, 
                            box(width = 12, title = "Active Products",
-                               "Mean: 200", br(),
-                               "Median: 180")
+                               "Mean: 2 products")
                     ),
                     column(4, 
                            box(width = 12, title = "Average Transaction Value",
-                               "Mean: 5", br(),
-                               "Median: 4")
+                               "Median: 1.76 million pesos")
                     ),
                     column(4, 
                            box(width = 12, title = "Customer Tenure",
-                               "Mean: 700", br(),
-                               "Median: 680")
+                               "Mean: 11.3 months")
                       )
                   )
                 )
@@ -344,9 +343,9 @@ ui <- dashboardPage(
                                       style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
                                       tags$li("Well-separated, compact clusters indicate strong, meaningful segmentation"),
                                       tags$li("Heavily overlapping clusters suggest the variables may not clearly distinguish customer groups"),
-                                      tags$li("Silhouette Width: Higher is better (max = 1) — values above 0.5 indicate strong cluster separation, 0.25–0.5 is moderate."),
-                                      tags$li("Entropy: Lower is better — indicates meaningfully uneven cluster sizes rather than arbitrary equal splits."),
-                                      tags$li("AIC / BIC: Lower is better — a drop as k increases suggests real structure; a plateau suggests overfitting. N/A for CLARA-based clustering.")
+                                      tags$li("Silhouette Width: Higher is better (max = 1); values above 0.5 indicate strong cluster separation, 0.25–0.5 is moderate."),
+                                      tags$li("Entropy: Lower is better; indicates meaningfully uneven cluster sizes rather than arbitrary equal splits."),
+                                      tags$li("AIC / BIC: Lower is better; a drop as k increases suggests real structure; a plateau suggests overfitting. N/A for CLARA-based clustering.")
                                       )
                                     )
                                   ),
@@ -366,8 +365,8 @@ ui <- dashboardPage(
                                     tags$ul(
                                       style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
                                       tags$li("Balanced clusters (roughly equal proportions) suggest the algorithm has found evenly distributed natural groupings"),
-                                      tags$li("A dominant cluster (e.g. >40%) may indicate a large average segment that absorbs customers who do not strongly belong elsewhere — consider increasing k to break it down further"),
-                                      tags$li("Very small clusters (<10%) may represent genuine niche segments or outliers — inspect their profiles carefully before acting on them")
+                                      tags$li("A dominant cluster (e.g. >40%) may indicate a large average segment that absorbs customers who do not strongly belong elsewhere. Consider increasing k to break it down further"),
+                                      tags$li("Very small clusters (<10%) may represent genuine niche segments or outliers; inspect their profiles carefully before acting on them")
                                       )
                                     )
                                   ),
@@ -375,7 +374,7 @@ ui <- dashboardPage(
                          tabPanel("Within-Cluster Profiles",
                                   h4("Within-Cluster Profiles"),
                                   p("This heatmap displays the mean value of each variable for each cluster. The colour reflects
-                                  the scaled mean across clusters — red indicates this cluster scores relatively high on that
+                                  the scaled mean across clusters; red indicates this cluster scores relatively high on that
                                     variable, blue indicates relatively low. The raw mean is shown as a number inside each cell."),
                                   
                                   plotOutput("plot_demo_heatmap", height = "350px"),
@@ -387,7 +386,7 @@ ui <- dashboardPage(
                                                  ),
                                     tags$ul(
                                       style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
-                                      tags$li("Red cells identify the defining characteristics of a cluster — what makes it distinct"),
+                                      tags$li("Red cells identify the defining characteristics of a cluster; what makes it distinct"),
                                       tags$li("Blue cells highlight what a cluster lacks relative to others"),
                                       tags$li("Variables with little colour variation across all clusters (all near white) are not driving the segmentation and could potentially be removed"),
                                       tags$li("Use this plot to assign meaningful labels to clusters (e.g. High Spenders, Weekend Users)")
@@ -446,9 +445,9 @@ ui <- dashboardPage(
                                       style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
                                       tags$li("Well-separated, compact clusters indicate strong, meaningful segmentation"),
                                       tags$li("Heavily overlapping clusters suggest the variables may not clearly distinguish customer groups"),
-                                      tags$li("Silhouette Width: Higher is better (max = 1) — values above 0.5 indicate strong cluster separation, 0.25–0.5 is moderate."),
-                                      tags$li("Entropy: Lower is better — indicates meaningfully uneven cluster sizes rather than arbitrary equal splits."),
-                                      tags$li("AIC / BIC: Lower is better — a drop as k increases suggests real structure; a plateau suggests overfitting. N/A for CLARA-based clustering.")
+                                      tags$li("Silhouette Width: Higher is better (max = 1); values above 0.5 indicate strong cluster separation, 0.25–0.5 is moderate."),
+                                      tags$li("Entropy: Lower is better; indicates meaningfully uneven cluster sizes rather than arbitrary equal splits."),
+                                      tags$li("AIC / BIC: Lower is better; a drop as k increases suggests real structure; a plateau suggests overfitting. N/A for CLARA-based clustering.")
                                       )
                                     )
                                   ),
@@ -468,8 +467,8 @@ ui <- dashboardPage(
                                     tags$ul(
                                       style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
                                       tags$li("Balanced clusters (roughly equal proportions) suggest the algorithm has found evenly distributed natural groupings"),
-                                      tags$li("A dominant cluster (e.g. >40%) may indicate a large average segment that absorbs customers who do not strongly belong elsewhere — consider increasing k to break it down further"),
-                                      tags$li("Very small clusters (<10%) may represent genuine niche segments or outliers — inspect their profiles carefully before acting on them")
+                                      tags$li("A dominant cluster (e.g. >40%) may indicate a large average segment that absorbs customers who do not strongly belong elsewhere; consider increasing k to break it down further"),
+                                      tags$li("Very small clusters (<10%) may represent genuine niche segments or outliers; inspect their profiles carefully before acting on them")
                                       )
                                     )
                                   ),
@@ -477,7 +476,7 @@ ui <- dashboardPage(
                          tabPanel("Within-Cluster Profiles",
                                   h4("Within-Cluster Profiles"),
                                   p("This heatmap displays the mean value of each variable for each cluster. The colour reflects
-                                  the scaled mean across clusters — red indicates this cluster scores relatively high on that
+                                  the scaled mean across clusters; red indicates this cluster scores relatively high on that
                                     variable, blue indicates relatively low. The raw mean is shown as a number inside each cell."),
                                   
                                   plotOutput("plot_trans_heatmap", height = "350px"),
@@ -489,7 +488,7 @@ ui <- dashboardPage(
                                                  ),
                                     tags$ul(
                                       style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
-                                      tags$li("Red cells identify the defining characteristics of a cluster — what makes it distinct"),
+                                      tags$li("Red cells identify the defining characteristics of a cluster; what makes it distinct"),
                                       tags$li("Blue cells highlight what a cluster lacks relative to others"),
                                       tags$li("Variables with little colour variation across all clusters (all near white) are not driving the segmentation and could potentially be removed"),
                                       tags$li("Use this plot to assign meaningful labels to clusters (e.g. High Spenders, Weekend Users)")
@@ -515,9 +514,9 @@ ui <- dashboardPage(
                                       tags$ul(
                                         style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
                                         tags$li("A sharp drop in WSS as k increases suggests each additional cluster is capturing meaningful structure in the data"),
-                                        tags$li("The elbow — where the rate of decrease slows and the curve begins to flatten — indicates the optimal k, beyond which adding more clusters yields diminishing returns"),
+                                        tags$li("The elbow, where the rate of decrease slows and the curve begins to flatten, indicates the optimal k, beyond which adding more clusters yields diminishing returns"),
                                         tags$li("A gradual curve with no clear elbow suggests the data does not have strong natural cluster structure, and any choice of k is somewhat arbitrary"),
-                                        tags$li("Use this plot alongside the silhouette plot to confirm your choice of k — the optimal k from the elbow plot should ideally also correspond to a higher silhouette width")
+                                        tags$li("Use this plot alongside the silhouette plot to confirm your choice of k. The optimal k from the elbow plot should ideally also correspond to a higher silhouette width")
                                         )
                                       )
                                     ),
@@ -574,9 +573,9 @@ ui <- dashboardPage(
                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
                                      tags$li("Well-separated, compact clusters indicate strong, meaningful segmentation"),
                                      tags$li("Heavily overlapping clusters suggest the variables may not clearly distinguish customer groups"),
-                                     tags$li("Silhouette Width: Higher is better (max = 1) — values above 0.5 indicate strong cluster separation, 0.25–0.5 is moderate."),
-                                     tags$li("Entropy: Lower is better — indicates meaningfully uneven cluster sizes rather than arbitrary equal splits."),
-                                     tags$li("AIC / BIC: Lower is better — a drop as k increases suggests real structure; a plateau suggests overfitting. N/A for CLARA-based clustering.")
+                                     tags$li("Silhouette Width: Higher is better (max = 1); values above 0.5 indicate strong cluster separation, 0.25–0.5 is moderate."),
+                                     tags$li("Entropy: Lower is better; indicates meaningfully uneven cluster sizes rather than arbitrary equal splits."),
+                                     tags$li("AIC / BIC: Lower is better; a drop as k increases suggests real structure; a plateau suggests overfitting. N/A for CLARA-based clustering.")
                                      )
                                    )
                                   ),
@@ -595,8 +594,8 @@ ui <- dashboardPage(
                                     tags$ul(
                                       style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
                                       tags$li("Balanced clusters (roughly equal proportions) suggest the algorithm has found evenly distributed natural groupings"),
-                                      tags$li("A dominant cluster (e.g. >40%) may indicate a large average segment that absorbs customers who do not strongly belong elsewhere — consider increasing k to break it down further"),
-                                      tags$li("Very small clusters (<10%) may represent genuine niche segments or outliers — inspect their profiles carefully before acting on them")
+                                      tags$li("A dominant cluster (e.g. >40%) may indicate a large average segment that absorbs customers who do not strongly belong elsewhere. Consider increasing k to break it down further"),
+                                      tags$li("Very small clusters (<10%) may represent genuine niche segments or outliers; inspect their profiles carefully before acting on them")
                                       )
                                     )
                                   ),
@@ -604,7 +603,7 @@ ui <- dashboardPage(
                          tabPanel("Within-Cluster Profiles",
                                   h4("Within-Cluster Profiles"),
                                   p("This heatmap displays the mean value of each variable for each cluster. The colour reflects
-                                  the scaled mean across clusters — red indicates this cluster scores relatively high on that
+                                  the scaled mean across clusters; red indicates this cluster scores relatively high on that
                                     variable, blue indicates relatively low. The raw mean is shown as a number inside each cell."),
                                   
                                   plotOutput("plot_usage_heatmap", height = "350px"),
@@ -616,7 +615,7 @@ ui <- dashboardPage(
                                                  ),
                                     tags$ul(
                                       style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
-                                      tags$li("Red cells identify the defining characteristics of a cluster — what makes it distinct"),
+                                      tags$li("Red cells identify the defining characteristics of a cluster; what makes it distinct"),
                                       tags$li("Blue cells highlight what a cluster lacks relative to others"),
                                       tags$li("Variables with little colour variation across all clusters (all near white) are not driving the segmentation and could potentially be removed"),
                                       tags$li("Use this plot to assign meaningful labels to clusters (e.g. High Spenders, Weekend Users)")
@@ -676,9 +675,9 @@ ui <- dashboardPage(
                                       style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
                                       tags$li("Well-separated, compact clusters indicate strong, meaningful segmentation"),
                                       tags$li("Heavily overlapping clusters suggest the variables may not clearly distinguish customer groups"),
-                                      tags$li("Silhouette Width: Higher is better (max = 1) — values above 0.5 indicate strong cluster separation, 0.25–0.5 is moderate."),
-                                      tags$li("Entropy: Lower is better — indicates meaningfully uneven cluster sizes rather than arbitrary equal splits."),
-                                      tags$li("AIC / BIC: Lower is better — a drop as k increases suggests real structure; a plateau suggests overfitting. N/A for CLARA-based clustering.")
+                                      tags$li("Silhouette Width: Higher is better (max = 1); values above 0.5 indicate strong cluster separation, 0.25–0.5 is moderate."),
+                                      tags$li("Entropy: Lower is better; indicates meaningfully uneven cluster sizes rather than arbitrary equal splits."),
+                                      tags$li("AIC / BIC: Lower is better; a drop as k increases suggests real structure; a plateau suggests overfitting. N/A for CLARA-based clustering.")
                                       )
                                   )
                          ),
@@ -698,8 +697,8 @@ ui <- dashboardPage(
                                     tags$ul(
                                       style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
                                       tags$li("Balanced clusters (roughly equal proportions) suggest the algorithm has found evenly distributed natural groupings"),
-                                      tags$li("A dominant cluster (e.g. >40%) may indicate a large average segment that absorbs customers who do not strongly belong elsewhere — consider increasing k to break it down further"),
-                                      tags$li("Very small clusters (<10%) may represent genuine niche segments or outliers — inspect their profiles carefully before acting on them")
+                                      tags$li("A dominant cluster (e.g. >40%) may indicate a large average segment that absorbs customers who do not strongly belong elsewhere. Consider increasing k to break it down further"),
+                                      tags$li("Very small clusters (<10%) may represent genuine niche segments or outliers; inspect their profiles carefully before acting on them")
                                       )
                                     )
                                   ),
@@ -707,7 +706,7 @@ ui <- dashboardPage(
                          tabPanel("Within-Cluster Profiles",
                                   h4("Within-Cluster Profiles"),
                                   p("This heatmap displays the mean value of each variable for each cluster. The colour reflects
-                                  the scaled mean across clusters — red indicates this cluster scores relatively high on that
+                                  the scaled mean across clusters; red indicates this cluster scores relatively high on that
                                     variable, blue indicates relatively low. The raw mean is shown as a number inside each cell."),
                                   
                                   plotOutput("plot_sat_heatmap", height = "350px"),
@@ -719,7 +718,7 @@ ui <- dashboardPage(
                                                  ),
                                     tags$ul(
                                       style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
-                                      tags$li("Red cells identify the defining characteristics of a cluster — what makes it distinct"),
+                                      tags$li("Red cells identify the defining characteristics of a cluster; what makes it distinct"),
                                       tags$li("Blue cells highlight what a cluster lacks relative to others"),
                                       tags$li("Variables with little colour variation across all clusters (all near white) are not driving the segmentation and could potentially be removed"),
                                       tags$li("Use this plot to assign meaningful labels to clusters (e.g. High Spenders, Weekend Users)")
@@ -745,9 +744,9 @@ ui <- dashboardPage(
                                       tags$ul(
                                         style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
                                         tags$li("A sharp drop in WSS as k increases suggests each additional cluster is capturing meaningful structure in the data"),
-                                        tags$li("The elbow — where the rate of decrease slows and the curve begins to flatten — indicates the optimal k, beyond which adding more clusters yields diminishing returns"),
+                                        tags$li("The elbow, where the rate of decrease slows and the curve begins to flatten, indicates the optimal k, beyond which adding more clusters yields diminishing returns"),
                                         tags$li("A gradual curve with no clear elbow suggests the data does not have strong natural cluster structure, and any choice of k is somewhat arbitrary"),
-                                        tags$li("Use this plot alongside the silhouette plot to confirm your choice of k — the optimal k from the elbow plot should ideally also correspond to a higher silhouette width")
+                                        tags$li("Use this plot alongside the silhouette plot to confirm your choice of k. The optimal k from the elbow plot should ideally also correspond to a higher silhouette width")
                                         )
                                       )
                                     ),

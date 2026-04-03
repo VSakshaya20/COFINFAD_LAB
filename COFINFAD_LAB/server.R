@@ -72,6 +72,7 @@ plot_elbow <- function(data, max_k = 10) {
   wss <- sapply(1:max_k, function(k) {
     kmeans(data, centers = k, nstart = 10)$tot.withinss
   })
+  
   data.frame(k = 1:max_k, wss = wss) %>%
     ggplot(aes(x = k, y = wss)) +
     geom_line(color = "steelblue", linewidth = 1) +
