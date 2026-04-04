@@ -149,7 +149,7 @@ It also includes real-time model quality metrics. Users can adjust the number of
 The R packages we will be using for the project include:
 
 |  |  |
-|--------------------------------|----------------------------------------|
+|----|----|
 | **Package** | **Description** |
 | tidyverse | For data import, cleaning, and manipulation |
 | ggplot2 (part of tidyverse) | For creating static data visualisations |

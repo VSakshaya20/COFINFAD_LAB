@@ -1,1 +1,67 @@
-/* css styles */
+/* Shared navbar across all pages */
+.navbar {
+  background:
+    linear-gradient(rgba(6, 15, 30, 0.78), rgba(6, 15, 30, 0.78)),
+    url("vaa image.png") center center / cover no-repeat !important;
+  border: none !important;
+  box-shadow: none !important;
+  min-height: 76px;
+}
+
+.navbar-brand,
+.navbar .nav-link,
+.navbar .dropdown-toggle,
+.navbar #quarto-search button,
+.navbar .aa-SubmitIcon {
+  color: white !important;
+}
+
+.navbar .nav-link:hover,
+.navbar .dropdown-toggle:hover,
+.navbar .nav-link.active {
+  color: #e6edf7 !important;
+}
+
+.navbar .dropdown-menu {
+  background-color: rgba(11, 27, 43, 0.96);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.navbar .dropdown-item {
+  color: white;
+}
+
+.navbar .dropdown-item:hover {
+  background-color: rgba(255,255,255,0.08);
+  color: white;
+}
+
+
+.team-card {
+  background-color: #f8f2ea;
+  padding: 2rem 2rem;
+  border-radius: 10px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.team-main {
+  text-align: center;
+}
+
+.team-main h4,
+.team-main h3 {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.profile-links {
+  margin-top: 1rem;
+  text-align: left;
+  width: 100%;
+  max-width: 350px;
+  margin-left: 1rem;
+  margin-right: 1rem;
+}

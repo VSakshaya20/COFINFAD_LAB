@@ -1,0 +1,44 @@
+---
+title: "About the Team"
+format:
+  html:
+    number-sections: false
+    toc: false
+---
+
+:::::::::::: {.columns .team-row}
+:::::: {.column width="44%"}
+::::: team-card
+::: team-main
+#### **AKSHAYA VIJAYAKUMAR SIVAKAMI**
+
+Master of IT in Business - Data Science and Analytics\
+Singapore Management University
+:::
+
+::: profile-links
+**LinkedIn:** [www.linkedin.com/in/akshaya-vs](https://www.linkedin.com/in/akshaya-vs)\
+**Course Website:** [Akshaya’s Visual Analytics Page](https://isss608-vs.netlify.app/)
+:::
+:::::
+::::::
+
+::: {.column width="12%"}
+:::
+
+:::::: {.column width="44%"}
+::::: team-card
+::: team-main
+#### **NAZIA FAISALKHAN FARUQUI**
+
+Master of IT in Business - Data Science and Analytics\
+Singapore Management University
+:::
+
+::: profile-links
+**LinkedIn:** [www.linkedin.com/in/nazia-faruqui](https://www.linkedin.com/in/nazia-faruqui)\
+**Course Website:** [Nazia’s Visual Analytics Page](https://isss608-first.netlify.app)
+:::
+:::::
+::::::
+::::::::::::

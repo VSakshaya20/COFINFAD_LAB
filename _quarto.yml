@@ -5,20 +5,38 @@ website:
   title: "COFINFAD Lab"
   navbar:
     right: 
-    - text: "About"
+    - text: "Overview"
+      href: "Overview.html"
     - text: "Shiny App"
+      menu: 
+        - text: "App"
+          href: "https://isss608-vs.shinyapps.io/COFINFAD_LAB/"
+        - text: "User Guide"
+          href: "https://cofinfad-lab-user-guide.my.canva.site/"
+    - text: "Prototype"
+      menu: 
+      - text: "Data Preparation"
+        href: "DataPrep.html"
+      - text: "Variable Distribution"
+        href: "Univariate.html"
+      - text: "Comparative Analysis"
+        href: "Bivariate.html"
+      - text: "Segmentation"
+        href: "Clustering.html"
     - text: "Project"
       menu: 
       - text: "Project Proposal"
         href: "Proposal.html"
       - text: "Meeting Minutes"
-        href: "Minutes.html"
+        href: "https://drive.google.com/drive/folders/16ccXSMt__MqU6m3ewA1F_ugXKfhz2ul3?usp=sharing"
+      - text: "Team"
+        href: "Team.html"
 
 format:
   html:
-    theme:
-      - cosmo
-    css: styles.css  
+    theme: cosmo
+    css: styles.css
+    
     page-layout: full
     toc: true
     toc-title: "On this page"

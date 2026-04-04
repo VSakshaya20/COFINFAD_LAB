@@ -1,0 +1,101 @@
+---
+title: "Data Preparation"
+author: "Nazia Faisalkhan Faruqui"
+execute: 
+  eval: true
+  echo: true
+  warning: false
+  message: false
+  freeze: true
+---
+
+# Overview
+
+This app utilises the **COFINFAD: Colombian Fintech Financial Analytics Dataset**, which consists of two primary data files: *customer_data.csv* and *transactions_data.csv*. These datasets are linked through a common identifier, “customer_id”. The data will be imported into R using the `read_csv()` function from the **readr** package.
+
+The *customer.csv* dataset will serve as the primary dataset for this project. Each row represents an individual customer, while each column captures different aspects of the customer’s profile and behaviour. The dataset provides a comprehensive view across multiple dimensions, including:
+
+-   **Demographic characteristics** (e.g., age, gender, location, income bracket, education level, marital status)
+
+-   **Financial product ownership** (e.g., savings accounts, credit cards, loans, investment and insurance products)
+
+-   **Digital engagement metrics** (e.g., app login frequency, feature usage)
+
+-   **Aggregated transaction behaviour** (e.g., number of transactions, average transaction value, total transaction volume, transaction frequency)
+
+-   **Customer experience indicators** (e.g., satisfaction scores, app ratings)
+
+# Data Import
+
+```{r}
+pacman::p_load(tidyverse, readr)
+df <- read_csv("COFINFAD_LAB/data/customer_data.csv")
+```
+
+Upon importing, we need to first check whether the imported data is accurate and complete. The `str()` function can used, and it shows that there are 48723 rows and 54 columns. It also gives us the data types of the variables.
+
+```{r}
+str(df)
+```
+
+Each row in the dataset represents an individual customer, while each columns describes different aspects of the customer’s profile and behaviour. The variables provide information across several key areas, including **demographic characteristics** (such as age, gender, location, income bracket, education level, and marital status), **financial product ownership** (for example savings accounts, credit cards, loans, investment accounts, and insurance products), and **digital engagement** (such as app login frequency and feature usage).
+
+In addition, the dataset includes **transaction-related metrics**, such as the number of transactions, average transaction value, total transaction volume, transaction frequency, and the dates of the first and last transactions. The dataset also captures **customer experience and satisfaction indicators**, including satisfaction scores, Net Promoter Score (NPS), app store ratings, and feedback sentiment. Finally, it provides **customer lifecycle and support information**, such as support tickets, complaint topics, customer tenure, churn probability, and estimated customer lifetime value. Together, these variables offer a comprehensive view of customer behaviour, engagement, and value.
+
+We also use `summary()` to examine the distribution of each variable and verify that the values fall within reasonable and expected ranges. This helps identify potential data quality issues such as invalid values, extreme outliers, or missing data.
+
+```{r}
+summary(df)
+```
+
+The summary output confirms that the values in the dataset fall within reasonable ranges for the respective variables. Demographic variables such as *age* and *household_size* show plausible minimum and maximum values, while transaction-related variables such as *tx_count*, *avg_tx_value*, and *total_tx_volume* contain positive values consistent with financial activity. Ratio-based variables, including *credit_utilization_ratio*, *resolved_tickets_ratio*, *weekend_transaction_ratio*, and *churn_probability*, fall between 0 and 1 as expected. Additionally, the summary indicates that most variables do not contain missing values, with the exception of *credit_utilization_ratio*, which contains some missing entries likely due to customers who do not hold credit cards. Overall, the results suggest that the dataset does not contain obvious invalid values and is suitable for further analysis.
+
+# Data Wrangling
+
+## Checking for Missing Values
+
+```{r}
+colSums(is.na(df))
+```
+
+Three variables contain missing data. The variable credit_utilization_ratio contains 18,263 missing values, which corresponds to customers who do not hold a credit card and therefore do not have a recorded utilization ratio. Additionally, feature_requests contains 16,115 missing values and complaint_topics contains 24,346 missing values. These missing values are expected, as not all customers provide feature requests or submit complaints. Since these missing values reflect the absence of feedback rather than data errors, they will be retained in the dataset for analysis.
+
+## Checking for Duplicates
+
+To ensure that each observation represents a unique customer, the dataset is checked for duplicate values in the customer_id variable. This is done using the duplicated() function in R to identify whether any customer IDs appear more than once. The results show that there are no duplicate *customer_id* values in the dataset, confirming that each row corresponds to a unique customer record.
+
+```{r}
+sum(duplicated(df$customer_id))
+```
+
+## Converting Variables
+
+Some variables in the dataset are converted to more appropriate data types to ensure they are handled correctly during analysis. Several categorical variables are originally stored as character variables and are converted to factor variables so that they are treated as categorical data rather than plain text. These variables include *gender*, *income_bracket*, *occupation*, *education_level*, *marital_status*, *acquisition_channel*, *customer_segment*, *feedback_sentiment*, *clv_segment*, and *preferred_transaction_type*. Converting these variables to factors allows them to be used more effectively in grouping, summarisation, and statistical modelling.
+
+In addition, the variable *customer_id* is converted from numeric to character format. Since this variable serves only as a unique identifier for each customer and is not used in numerical calculations, converting it to a character variable prevents it from being mistakenly treated as a quantitative variable during analysis.
+
+```{r}
+df$customer_id <- as.character(df$customer_id)
+
+df$gender <- as.factor(df$gender)
+df$income_bracket <- as.factor(df$income_bracket)
+df$occupation <- as.factor(df$occupation)
+df$education_level <- as.factor(df$education_level)
+df$marital_status <- as.factor(df$marital_status)
+df$acquisition_channel <- as.factor(df$acquisition_channel)
+df$customer_segment <- as.factor(df$customer_segment)
+df$feedback_sentiment <- as.factor(df$feedback_sentiment)
+df$clv_segment <- as.factor(df$clv_segment)
+df$preferred_transaction_type <- as.factor(df$preferred_transaction_type)
+df$location <- as.factor(df$location)
+```
+
+```{r}
+str(df)
+```
+
+::: callout-note
+The data set contains two sets of transaction metrics. The variables *avg_tx_value*, *total_tx_volume, first_tx, last_tx* represent aggregated transaction behaviour derived from the transaction dataset. A second set of transaction-related variables (average_transaction_value, total_transaction_volume, first_transaction_date, last_transaction_date) appears to represent derived behavioural metrics and will not be used in the analysis to avoid duplication. Additionally, transaction_frequency and avg_daily_transactions both calculate the average number of transactions per day, hence only avg_daily_transactions will be used for analysis.
+:::
+
+Finally, the cleaned data set is stored as "***cleaned_data.csv***", which is used for the further analysis.

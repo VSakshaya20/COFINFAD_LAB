@@ -88,7 +88,10 @@ ui <- dashboardPage(
                   solidHeader = TRUE,
                   
                   p("Use this app to explore and analyse Colombian fintech customer data through interactive visualisations."),
-                  p("Examine variable distributions, understand different customer segments, and identify meaningful patterns.")
+                  p("Examine variable distributions, understand different customer segments, and identify meaningful patterns."),
+                  tags$p("Data set used: ", 
+                         tags$a(href = "https://data.mendeley.com/datasets/mhb4zn3258/1", "Colombian Fintech Financial Analytics Dataset", 
+                                target = "_blank"))
                 ),
                 
                 # RIGHT: Key Variables
@@ -332,7 +335,6 @@ ui <- dashboardPage(
                                   
                                   plotOutput("plot_demo", height = "350px"),
                                   metrics_row_ui("sil_demo", "ent_demo", "aicbic_demo"),
-                                  br(), br(),
                                   
                                   tags$details(
                                     style = "margin-top: 10px;",

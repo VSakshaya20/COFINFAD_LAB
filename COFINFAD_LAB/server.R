@@ -12,16 +12,19 @@ num_vars <- reactive({
   names(df)[sapply(df, is.numeric)]
 })
 
+# Entropy Calculation
 calc_entropy <- function(clusters) {
   props <- table(clusters) / length(clusters)
-  -sum(props * log(props + 1e-10))
+  round(-sum(props * log(props + 1e-10)),3)
 }
 
+# Silhouette Width Calculation
 calc_sil_kmeans <- function(model, data) {
   sil <- silhouette(model$cluster, dist(data))
-  mean(sil[, 3])
+  round(mean(sil[, 3]),3)
 }
 
+# AIC/BIC Calculation
 aic_bic_text <- function(model, data) {
   k <- nrow(model$centers)
   n <- nrow(data)
@@ -67,7 +70,7 @@ plot_heatmap <- function(clusters, data) {
     theme(axis.text.x = element_text(angle = 30, hjust = 1))
 }
 
-# Evaluation
+# Evaluation Plots
 plot_elbow <- function(data, max_k = 10) {
   wss <- sapply(1:max_k, function(k) {
     kmeans(data, centers = k, nstart = 10)$tot.withinss
@@ -498,8 +501,7 @@ function(input, output, session) {
           coord_flip()
       }
       else if(type == "Ridgeline") {
-        ggplot(df,
-                         aes(x = .data[[y]], y = .data[[x]])) +
+        ggplot(df, aes(x = .data[[y]], y = .data[[x]])) +
           ggridges::geom_density_ridges()
       }
     }
@@ -569,11 +571,16 @@ function(input, output, session) {
   
   #Multivariate
   observe({
-    updateCheckboxGroupInput(session, "multi_vars",
-                             choices = names(df)[sapply(df, is.numeric)],
-                             selected = names(df)[sapply(df, is.numeric)][1:5])
+    numeric_vars <- names(df)[sapply(df, is.numeric)]
+    numeric_vars <- setdiff(numeric_vars, "customer_id")
     
+    updateCheckboxGroupInput(
+      session, "multi_vars",
+      choices = numeric_vars,
+      selected = numeric_vars[1:5]
+    )
   })
+
   
   output$corr_plot <- renderPlot({
     req(input$multi_vars)

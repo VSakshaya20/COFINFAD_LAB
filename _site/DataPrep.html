@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Nazia Faisalkhan Faruqui">
+
+<title>Data Preparation – COFINFAD Lab</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-5b4ad623e5705c0698d39aec6f10cf02.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">COFINFAD Lab</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./Overview.html"> 
+<span class="menu-text">Overview</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-shiny-app" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Shiny App</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-shiny-app">    
+        <li>
+    <a class="dropdown-item" href="https://isss608-vs.shinyapps.io/COFINFAD_LAB/">
+ <span class="dropdown-text">App</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://cofinfad-lab-user-guide.my.canva.site/">
+ <span class="dropdown-text">User Guide</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-prototype" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Prototype</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-prototype">    
+        <li>
+    <a class="dropdown-item" href="./DataPrep.html">
+ <span class="dropdown-text">Data Preparation</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./Univariate.html">
+ <span class="dropdown-text">Variable Distribution</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./Bivariate.html">
+ <span class="dropdown-text">Comparative Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./Clustering.html">
+ <span class="dropdown-text">Segmentation</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Project</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-project">    
+        <li>
+    <a class="dropdown-item" href="./Proposal.html">
+ <span class="dropdown-text">Project Proposal</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://drive.google.com/drive/folders/16ccXSMt__MqU6m3ewA1F_ugXKfhz2ul3?usp=sharing">
+ <span class="dropdown-text">Meeting Minutes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./Team.html">
+ <span class="dropdown-text">Team</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="header-section-number">1</span> Overview</a></li>
+  <li><a href="#data-import" id="toc-data-import" class="nav-link" data-scroll-target="#data-import"><span class="header-section-number">2</span> Data Import</a></li>
+  <li><a href="#data-wrangling" id="toc-data-wrangling" class="nav-link" data-scroll-target="#data-wrangling"><span class="header-section-number">3</span> Data Wrangling</a>
+  <ul class="collapse">
+  <li><a href="#checking-for-missing-values" id="toc-checking-for-missing-values" class="nav-link" data-scroll-target="#checking-for-missing-values"><span class="header-section-number">3.1</span> Checking for Missing Values</a></li>
+  <li><a href="#checking-for-duplicates" id="toc-checking-for-duplicates" class="nav-link" data-scroll-target="#checking-for-duplicates"><span class="header-section-number">3.2</span> Checking for Duplicates</a></li>
+  <li><a href="#converting-variables" id="toc-converting-variables" class="nav-link" data-scroll-target="#converting-variables"><span class="header-section-number">3.3</span> Converting Variables</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Data Preparation</h1>
+</div>
+
+
+
+<div class="quarto-title-meta column-page-left">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Nazia Faisalkhan Faruqui </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="overview" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Overview</h1>
+<p>This app utilises the <strong>COFINFAD: Colombian Fintech Financial Analytics Dataset</strong>, which consists of two primary data files: <em>customer_data.csv</em> and <em>transactions_data.csv</em>. These datasets are linked through a common identifier, “customer_id”. The data will be imported into R using the <code>read_csv()</code> function from the <strong>readr</strong> package.</p>
+<p>The <em>customer.csv</em> dataset will serve as the primary dataset for this project. Each row represents an individual customer, while each column captures different aspects of the customer’s profile and behaviour. The dataset provides a comprehensive view across multiple dimensions, including:</p>
+<ul>
+<li><p><strong>Demographic characteristics</strong> (e.g., age, gender, location, income bracket, education level, marital status)</p></li>
+<li><p><strong>Financial product ownership</strong> (e.g., savings accounts, credit cards, loans, investment and insurance products)</p></li>
+<li><p><strong>Digital engagement metrics</strong> (e.g., app login frequency, feature usage)</p></li>
+<li><p><strong>Aggregated transaction behaviour</strong> (e.g., number of transactions, average transaction value, total transaction volume, transaction frequency)</p></li>
+<li><p><strong>Customer experience indicators</strong> (e.g., satisfaction scores, app ratings)</p></li>
+</ul>
+</section>
+<section id="data-import" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Data Import</h1>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(tidyverse, readr)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"COFINFAD_LAB/data/customer_data.csv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Upon importing, we need to first check whether the imported data is accurate and complete. The <code>str()</code> function can used, and it shows that there are 48723 rows and 54 columns. It also gives us the data types of the variables.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>spc_tbl_ [48,723 × 54] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
+ $ customer_id               : num [1:48723] 93716481 49020929 52690950 23199751 61997066 ...
+ $ age                       : num [1:48723] 44 44 45 45 44 45 44 44 45 44 ...
+ $ gender                    : chr [1:48723] "Male" "Male" "Male" "Male" ...
+ $ location                  : chr [1:48723] "Pereira, Risaralda" "Cali, Valle del Cauca" "Barranquilla, Atlántico" "Bogotá, Cundinamarca" ...
+ $ income_bracket            : chr [1:48723] "Very High" "Medium" "High" "High" ...
+ $ occupation                : chr [1:48723] "Engineer" "Construction Worker" "Construction Worker" "Electrician" ...
+ $ education_level           : chr [1:48723] "Master" "Bachelor" "Bachelor" "High School" ...
+ $ marital_status            : chr [1:48723] "Married" "Married" "Married" "Single" ...
+ $ household_size            : num [1:48723] 5 2 4 2 3 4 4 3 1 3 ...
+ $ acquisition_channel       : chr [1:48723] "Partnership" "Paid Ad" "Paid Ad" "Referral" ...
+ $ customer_segment          : chr [1:48723] "occasional" "regular" "inactive" "inactive" ...
+ $ savings_account           : logi [1:48723] TRUE TRUE TRUE TRUE TRUE TRUE ...
+ $ credit_card               : logi [1:48723] TRUE FALSE FALSE FALSE TRUE TRUE ...
+ $ personal_loan             : logi [1:48723] FALSE FALSE FALSE FALSE FALSE FALSE ...
+ $ investment_account        : logi [1:48723] FALSE FALSE TRUE TRUE FALSE TRUE ...
+ $ insurance_product         : logi [1:48723] TRUE FALSE TRUE FALSE FALSE FALSE ...
+ $ active_products           : num [1:48723] 1 5 3 2 1 1 1 4 2 3 ...
+ $ app_logins_frequency      : num [1:48723] 15 30 4 15 19 15 44 22 7 11 ...
+ $ feature_usage_diversity   : num [1:48723] 3 0 4 4 1 4 6 1 1 6 ...
+ $ bill_payment_user         : logi [1:48723] FALSE TRUE TRUE TRUE FALSE TRUE ...
+ $ auto_savings_enabled      : logi [1:48723] FALSE FALSE FALSE FALSE FALSE TRUE ...
+ $ credit_utilization_ratio  : num [1:48723] 0.179 NA NA NA 0.404 ...
+ $ international_transactions: num [1:48723] 1 1 1 1 0 0 0 0 0 1 ...
+ $ failed_transactions       : num [1:48723] 0 0 0 1 0 0 1 1 0 0 ...
+ $ tx_count                  : num [1:48723] 76 10 10 23 18 15 24 45 134 13 ...
+ $ avg_tx_value              : num [1:48723] 1679872 5445810 640335 660180 14574469 ...
+ $ total_tx_volume           : num [1:48723] 1.28e+08 5.45e+07 6.40e+06 1.52e+07 2.62e+08 ...
+ $ first_tx                  : Date[1:48723], format: "2023-01-05" "2023-02-05" ...
+ $ last_tx                   : Date[1:48723], format: "2023-12-25" "2023-12-20" ...
+ $ base_satisfaction         : num [1:48723] 9.21 6.07 8.2 7.53 6.61 ...
+ $ tx_satisfaction           : num [1:48723] 0.38 0.05 0.05 0.115 0.09 0.075 0.12 0.225 0.67 0.065 ...
+ $ product_satisfaction      : num [1:48723] 0.6 0.2 0.6 0.4 0.4 0.6 0.4 0.4 0.6 0.8 ...
+ $ satisfaction_score        : num [1:48723] 5 3 4 4 3 4 4 4 5 4 ...
+ $ nps_score                 : num [1:48723] -7 -46 -29 -31 -47 -29 -34 -36 -4 -27 ...
+ $ last_survey_date          : Date[1:48723], format: "2023-12-16" "2023-05-05" ...
+ $ support_tickets_count     : num [1:48723] 1 1 0 2 2 1 1 0 2 0 ...
+ $ resolved_tickets_ratio    : num [1:48723] 0 1 0 0.5 1 1 1 0 1 0 ...
+ $ app_store_rating          : num [1:48723] 3.5 4 5 4.5 4 4 5 4.5 4.5 4.5 ...
+ $ feedback_sentiment        : chr [1:48723] "Neutral" "Positive" "Positive" "Positive" ...
+ $ feature_requests          : chr [1:48723] "Budgeting tools" NA NA "Cryptocurrency trading, Budgeting tools" ...
+ $ complaint_topics          : chr [1:48723] NA NA NA NA ...
+ $ clv_segment               : chr [1:48723] "Gold" "Bronze" "Gold" "Bronze" ...
+ $ monthly_transaction_count : num [1:48723] 1.43 1.57 2.5 1.56 2.11 ...
+ $ average_transaction_value : num [1:48723] 6054025 2127414 3575915 1513354 612674 ...
+ $ total_transaction_volume  : num [1:48723] 60540250 23401550 35759150 21186950 11640800 ...
+ $ transaction_frequency     : num [1:48723] 0.0308 0.0329 0.05 0.0478 0.0619 ...
+ $ last_transaction_date     : Date[1:48723], format: "2023-12-05" "2023-12-18" ...
+ $ preferred_transaction_type: chr [1:48723] "Transfer" "Transfer" "Transfer" "Transfer" ...
+ $ first_transaction_date    : Date[1:48723], format: "2023-01-05" "2023-02-05" ...
+ $ weekend_transaction_ratio : num [1:48723] 0.3 0.182 0.3 0.143 0.316 ...
+ $ avg_daily_transactions    : num [1:48723] 0.0308 0.0329 0.05 0.0478 0.0619 ...
+ $ customer_tenure           : num [1:48723] 11.63 11.5 8.77 10.73 11.63 ...
+ $ churn_probability         : num [1:48723] 0.362 0.182 0.321 0.337 0.398 ...
+ $ customer_lifetime_value   : num [1:48723] 3.12e+08 1.67e+08 1.94e+07 3.60e+07 3.05e+08 ...
+ - attr(*, "spec")=
+  .. cols(
+  ..   customer_id = col_double(),
+  ..   age = col_double(),
+  ..   gender = col_character(),
+  ..   location = col_character(),
+  ..   income_bracket = col_character(),
+  ..   occupation = col_character(),
+  ..   education_level = col_character(),
+  ..   marital_status = col_character(),
+  ..   household_size = col_double(),
+  ..   acquisition_channel = col_character(),
+  ..   customer_segment = col_character(),
+  ..   savings_account = col_logical(),
+  ..   credit_card = col_logical(),
+  ..   personal_loan = col_logical(),
+  ..   investment_account = col_logical(),
+  ..   insurance_product = col_logical(),
+  ..   active_products = col_double(),
+  ..   app_logins_frequency = col_double(),
+  ..   feature_usage_diversity = col_double(),
+  ..   bill_payment_user = col_logical(),
+  ..   auto_savings_enabled = col_logical(),
+  ..   credit_utilization_ratio = col_double(),
+  ..   international_transactions = col_double(),
+  ..   failed_transactions = col_double(),
+  ..   tx_count = col_double(),
+  ..   avg_tx_value = col_double(),
+  ..   total_tx_volume = col_double(),
+  ..   first_tx = col_date(format = ""),
+  ..   last_tx = col_date(format = ""),
+  ..   base_satisfaction = col_double(),
+  ..   tx_satisfaction = col_double(),
+  ..   product_satisfaction = col_double(),
+  ..   satisfaction_score = col_double(),
+  ..   nps_score = col_double(),
+  ..   last_survey_date = col_date(format = ""),
+  ..   support_tickets_count = col_double(),
+  ..   resolved_tickets_ratio = col_double(),
+  ..   app_store_rating = col_double(),
+  ..   feedback_sentiment = col_character(),
+  ..   feature_requests = col_character(),
+  ..   complaint_topics = col_character(),
+  ..   clv_segment = col_character(),
+  ..   monthly_transaction_count = col_double(),
+  ..   average_transaction_value = col_double(),
+  ..   total_transaction_volume = col_double(),
+  ..   transaction_frequency = col_double(),
+  ..   last_transaction_date = col_date(format = ""),
+  ..   preferred_transaction_type = col_character(),
+  ..   first_transaction_date = col_date(format = ""),
+  ..   weekend_transaction_ratio = col_double(),
+  ..   avg_daily_transactions = col_double(),
+  ..   customer_tenure = col_double(),
+  ..   churn_probability = col_double(),
+  ..   customer_lifetime_value = col_double()
+  .. )
+ - attr(*, "problems")=&lt;externalptr&gt; </code></pre>
+</div>
+</div>
+<p>Each row in the dataset represents an individual customer, while each columns describes different aspects of the customer’s profile and behaviour. The variables provide information across several key areas, including&nbsp;<strong>demographic characteristics</strong>&nbsp;(such as age, gender, location, income bracket, education level, and marital status),&nbsp;<strong>financial product ownership</strong>&nbsp;(for example savings accounts, credit cards, loans, investment accounts, and insurance products), and&nbsp;<strong>digital engagement</strong>&nbsp;(such as app login frequency and feature usage).</p>
+<p>In addition, the dataset includes&nbsp;<strong>transaction-related metrics</strong>, such as the number of transactions, average transaction value, total transaction volume, transaction frequency, and the dates of the first and last transactions. The dataset also captures&nbsp;<strong>customer experience and satisfaction indicators</strong>, including satisfaction scores, Net Promoter Score (NPS), app store ratings, and feedback sentiment. Finally, it provides&nbsp;<strong>customer lifecycle and support information</strong>, such as support tickets, complaint topics, customer tenure, churn probability, and estimated customer lifetime value. Together, these variables offer a comprehensive view of customer behaviour, engagement, and value.</p>
+<p>We also use&nbsp;<code>summary()</code>&nbsp;to examine the distribution of each variable and verify that the values fall within reasonable and expected ranges. This helps identify potential data quality issues such as invalid values, extreme outliers, or missing data.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  customer_id            age           gender            location        
+ Min.   :10000617   Min.   :29.00   Length:48723       Length:48723      
+ 1st Qu.:32708346   1st Qu.:30.00   Class :character   Class :character  
+ Median :55174470   Median :45.00   Mode  :character   Mode  :character  
+ Mean   :55027986   Mean   :44.54                                        
+ 3rd Qu.:77242332   3rd Qu.:59.00                                        
+ Max.   :99999798   Max.   :60.00                                        
+                                                                         
+ income_bracket      occupation        education_level    marital_status    
+ Length:48723       Length:48723       Length:48723       Length:48723      
+ Class :character   Class :character   Class :character   Class :character  
+ Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+                                                                            
+                                                                            
+                                                                            
+                                                                            
+ household_size   acquisition_channel customer_segment   savings_account
+ Min.   : 1.000   Length:48723        Length:48723       Mode :logical  
+ 1st Qu.: 2.000   Class :character    Class :character   FALSE:10264    
+ Median : 3.000   Mode  :character    Mode  :character   TRUE :38459    
+ Mean   : 3.496                                                         
+ 3rd Qu.: 4.000                                                         
+ Max.   :13.000                                                         
+                                                                        
+ credit_card     personal_loan   investment_account insurance_product
+ Mode :logical   Mode :logical   Mode :logical      Mode :logical    
+ FALSE:18263     FALSE:33321     FALSE:27985        FALSE:38388      
+ TRUE :30460     TRUE :15402     TRUE :20738        TRUE :10335      
+                                                                     
+                                                                     
+                                                                     
+                                                                     
+ active_products app_logins_frequency feature_usage_diversity bill_payment_user
+ Min.   :1.000   Min.   :  4.00       Min.   : 0.00           Mode :logical    
+ 1st Qu.:1.000   1st Qu.: 15.00       1st Qu.: 1.00           FALSE:14553      
+ Median :2.000   Median : 22.00       Median : 2.00           TRUE :34170      
+ Mean   :2.095   Mean   : 22.38       Mean   : 2.37                            
+ 3rd Qu.:3.000   3rd Qu.: 30.00       3rd Qu.: 4.00                            
+ Max.   :5.000   Max.   :100.00       Max.   :10.00                            
+                                                                               
+ auto_savings_enabled credit_utilization_ratio international_transactions
+ Mode :logical        Min.   :0.0002           Min.   :0.0000            
+ FALSE:29173          1st Qu.:0.1619           1st Qu.:0.0000            
+ TRUE :19550          Median :0.2659           Median :0.0000            
+                      Mean   :0.2869           Mean   :0.4939            
+                      3rd Qu.:0.3910           3rd Qu.:1.0000            
+                      Max.   :0.9375           Max.   :6.0000            
+                      NA's   :18263                                      
+ failed_transactions    tx_count         avg_tx_value      total_tx_volume    
+ Min.   :0.0000      Min.   :   10.00   Min.   :  318215   Min.   :3.182e+06  
+ 1st Qu.:0.0000      1st Qu.:   12.00   1st Qu.: 1339114   1st Qu.:2.016e+07  
+ Median :0.0000      Median :   18.00   Median : 1763107   Median :4.808e+07  
+ Mean   :0.1988      Mean   :   64.84   Mean   : 3564852   Mean   :2.575e+08  
+ 3rd Qu.:0.0000      3rd Qu.:   35.00   3rd Qu.: 4658536   3rd Qu.:1.204e+08  
+ Max.   :4.0000      Max.   :77465.00   Max.   :51670303   Max.   :1.073e+12  
+                                                                              
+    first_tx             last_tx           base_satisfaction tx_satisfaction 
+ Min.   :2023-01-04   Min.   :2023-05-11   Min.   : 4.250    Min.   :0.0500  
+ 1st Qu.:2023-01-07   1st Qu.:2023-12-05   1st Qu.: 7.326    1st Qu.:0.0600  
+ Median :2023-01-14   Median :2023-12-19   Median : 8.005    Median :0.0900  
+ Mean   :2023-01-21   Mean   :2023-12-11   Mean   : 8.001    Mean   :0.1772  
+ 3rd Qu.:2023-01-28   3rd Qu.:2023-12-26   3rd Qu.: 8.676    3rd Qu.:0.1750  
+ Max.   :2023-08-10   Max.   :2023-12-29   Max.   :11.937    Max.   :1.0000  
+                                                                             
+ product_satisfaction satisfaction_score   nps_score      last_survey_date    
+ Min.   :0.0000       Min.   :2.000      Min.   :-80.00   Min.   :2023-01-01  
+ 1st Qu.:0.4000       1st Qu.:4.000      1st Qu.:-34.00   1st Qu.:2023-04-01  
+ Median :0.4000       Median :4.000      Median :-28.00   Median :2023-07-03  
+ Mean   :0.4737       Mean   :4.162      Mean   :-26.76   Mean   :2023-07-02  
+ 3rd Qu.:0.6000       3rd Qu.:5.000      3rd Qu.:-19.00   3rd Qu.:2023-10-01  
+ Max.   :1.0000       Max.   :6.000      Max.   : 23.00   Max.   :2023-12-31  
+                                                                              
+ support_tickets_count resolved_tickets_ratio app_store_rating
+ Min.   :0.0000        Min.   :0.0000         Min.   :2.000   
+ 1st Qu.:0.0000        1st Qu.:0.0000         1st Qu.:4.000   
+ Median :1.0000        Median :0.5000         Median :4.000   
+ Mean   :0.9975        Mean   :0.5062         Mean   :4.156   
+ 3rd Qu.:2.0000        3rd Qu.:1.0000         3rd Qu.:4.500   
+ Max.   :7.0000        Max.   :1.0000         Max.   :5.000   
+                                                              
+ feedback_sentiment feature_requests   complaint_topics   clv_segment       
+ Length:48723       Length:48723       Length:48723       Length:48723      
+ Class :character   Class :character   Class :character   Class :character  
+ Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+                                                                            
+                                                                            
+                                                                            
+                                                                            
+ monthly_transaction_count average_transaction_value total_transaction_volume
+ Min.   :   1.000          Min.   :  318215          Min.   :3.182e+06       
+ 1st Qu.:   1.600          1st Qu.: 1339114          1st Qu.:2.016e+07       
+ Median :   2.000          Median : 1763107          Median :4.808e+07       
+ Mean   :   5.765          Mean   : 3564852          Mean   :2.575e+08       
+ 3rd Qu.:   3.091          3rd Qu.: 4658536          3rd Qu.:1.204e+08       
+ Max.   :6455.417          Max.   :51670303          Max.   :1.073e+12       
+                                                                             
+ transaction_frequency last_transaction_date preferred_transaction_type
+ Min.   :  0.02786     Min.   :2023-05-11    Length:48723              
+ 1st Qu.:  0.04154     1st Qu.:2023-12-05    Class :character          
+ Median :  0.05764     Median :2023-12-19    Mode  :character          
+ Mean   :  0.18656     Mean   :2023-12-11                              
+ 3rd Qu.:  0.10314     3rd Qu.:2023-12-26                              
+ Max.   :215.77994     Max.   :2023-12-29                              
+                                                                       
+ first_transaction_date weekend_transaction_ratio avg_daily_transactions
+ Min.   :2023-01-04     Min.   :0.0000            Min.   :  0.02786     
+ 1st Qu.:2023-01-07     1st Qu.:0.2143            1st Qu.:  0.04154     
+ Median :2023-01-14     Median :0.2800            Median :  0.05764     
+ Mean   :2023-01-21     Mean   :0.2829            Mean   :  0.18656     
+ 3rd Qu.:2023-01-28     3rd Qu.:0.3400            3rd Qu.:  0.10314     
+ Max.   :2023-08-10     Max.   :0.9091            Max.   :215.77994     
+                                                                        
+ customer_tenure churn_probability customer_lifetime_value
+ Min.   : 4.70   Min.   :0.1143    Min.   :0.000e+00      
+ 1st Qu.:11.17   1st Qu.:0.3029    1st Qu.:5.841e+07      
+ Median :11.63   Median :0.3540    Median :1.297e+08      
+ Mean   :11.37   Mean   :0.3429    Mean   :3.282e+08      
+ 3rd Qu.:11.87   3rd Qu.:0.3927    3rd Qu.:2.974e+08      
+ Max.   :11.97   Max.   :0.5006    Max.   :1.777e+10      
+                                                          </code></pre>
+</div>
+</div>
+<p>The summary output confirms that the values in the dataset fall within reasonable ranges for the respective variables. Demographic variables such as&nbsp;<em>age</em>&nbsp;and&nbsp;<em>household_size</em>&nbsp;show plausible minimum and maximum values, while transaction-related variables such as&nbsp;<em>tx_count</em>,&nbsp;<em>avg_tx_value</em>, and&nbsp;<em>total_tx_volume</em>&nbsp;contain positive values consistent with financial activity. Ratio-based variables, including&nbsp;<em>credit_utilization_ratio</em>,&nbsp;<em>resolved_tickets_ratio</em>,&nbsp;<em>weekend_transaction_ratio</em>, and&nbsp;<em>churn_probability</em>, fall between 0 and 1 as expected. Additionally, the summary indicates that most variables do not contain missing values, with the exception of&nbsp;<em>credit_utilization_ratio</em>, which contains some missing entries likely due to customers who do not hold credit cards. Overall, the results suggest that the dataset does not contain obvious invalid values and is suitable for further analysis.</p>
+</section>
+<section id="data-wrangling" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Data Wrangling</h1>
+<section id="checking-for-missing-values" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="checking-for-missing-values"><span class="header-section-number">3.1</span> Checking for Missing Values</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colSums</span>(<span class="fu">is.na</span>(df))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>               customer_id                        age 
+                         0                          0 
+                    gender                   location 
+                         0                          0 
+            income_bracket                 occupation 
+                         0                          0 
+           education_level             marital_status 
+                         0                          0 
+            household_size        acquisition_channel 
+                         0                          0 
+          customer_segment            savings_account 
+                         0                          0 
+               credit_card              personal_loan 
+                         0                          0 
+        investment_account          insurance_product 
+                         0                          0 
+           active_products       app_logins_frequency 
+                         0                          0 
+   feature_usage_diversity          bill_payment_user 
+                         0                          0 
+      auto_savings_enabled   credit_utilization_ratio 
+                         0                      18263 
+international_transactions        failed_transactions 
+                         0                          0 
+                  tx_count               avg_tx_value 
+                         0                          0 
+           total_tx_volume                   first_tx 
+                         0                          0 
+                   last_tx          base_satisfaction 
+                         0                          0 
+           tx_satisfaction       product_satisfaction 
+                         0                          0 
+        satisfaction_score                  nps_score 
+                         0                          0 
+          last_survey_date      support_tickets_count 
+                         0                          0 
+    resolved_tickets_ratio           app_store_rating 
+                         0                          0 
+        feedback_sentiment           feature_requests 
+                         0                      16115 
+          complaint_topics                clv_segment 
+                     24346                          0 
+ monthly_transaction_count  average_transaction_value 
+                         0                          0 
+  total_transaction_volume      transaction_frequency 
+                         0                          0 
+     last_transaction_date preferred_transaction_type 
+                         0                          0 
+    first_transaction_date  weekend_transaction_ratio 
+                         0                          0 
+    avg_daily_transactions            customer_tenure 
+                         0                          0 
+         churn_probability    customer_lifetime_value 
+                         0                          0 </code></pre>
+</div>
+</div>
+<p>Three variables contain missing data. The variable credit_utilization_ratio contains 18,263 missing values, which corresponds to customers who do not hold a credit card and therefore do not have a recorded utilization ratio. Additionally, feature_requests contains 16,115 missing values and complaint_topics contains 24,346 missing values. These missing values are expected, as not all customers provide feature requests or submit complaints. Since these missing values reflect the absence of feedback rather than data errors, they will be retained in the dataset for analysis.</p>
+</section>
+<section id="checking-for-duplicates" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="checking-for-duplicates"><span class="header-section-number">3.2</span> Checking for Duplicates</h2>
+<p>To ensure that each observation represents a unique customer, the dataset is checked for duplicate values in the customer_id variable. This is done using the duplicated() function in R to identify whether any customer IDs appear more than once. The results show that there are no duplicate&nbsp;<em>customer_id</em>&nbsp;values in the dataset, confirming that each row corresponds to a unique customer record.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(<span class="fu">duplicated</span>(df<span class="sc">$</span>customer_id))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0</code></pre>
+</div>
+</div>
+</section>
+<section id="converting-variables" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="converting-variables"><span class="header-section-number">3.3</span> Converting Variables</h2>
+<p>Some variables in the dataset are converted to more appropriate data types to ensure they are handled correctly during analysis. Several categorical variables are originally stored as character variables and are converted to factor variables so that they are treated as categorical data rather than plain text. These variables include&nbsp;<em>gender</em>,&nbsp;<em>income_bracket</em>,&nbsp;<em>occupation</em>,&nbsp;<em>education_level</em>,&nbsp;<em>marital_status</em>,&nbsp;<em>acquisition_channel</em>,&nbsp;<em>customer_segment</em>,&nbsp;<em>feedback_sentiment</em>,&nbsp;<em>clv_segment</em>, and&nbsp;<em>preferred_transaction_type</em>. Converting these variables to factors allows them to be used more effectively in grouping, summarisation, and statistical modelling.</p>
+<p>In addition, the variable&nbsp;<em>customer_id</em>&nbsp;is converted from numeric to character format. Since this variable serves only as a unique identifier for each customer and is not used in numerical calculations, converting it to a character variable prevents it from being mistakenly treated as a quantitative variable during analysis.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>customer_id <span class="ot">&lt;-</span> <span class="fu">as.character</span>(df<span class="sc">$</span>customer_id)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>gender <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(df<span class="sc">$</span>gender)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>income_bracket <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(df<span class="sc">$</span>income_bracket)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>occupation <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(df<span class="sc">$</span>occupation)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>education_level <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(df<span class="sc">$</span>education_level)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>marital_status <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(df<span class="sc">$</span>marital_status)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>acquisition_channel <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(df<span class="sc">$</span>acquisition_channel)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>customer_segment <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(df<span class="sc">$</span>customer_segment)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>feedback_sentiment <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(df<span class="sc">$</span>feedback_sentiment)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>clv_segment <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(df<span class="sc">$</span>clv_segment)</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>preferred_transaction_type <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(df<span class="sc">$</span>preferred_transaction_type)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>location <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(df<span class="sc">$</span>location)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>spc_tbl_ [48,723 × 54] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
+ $ customer_id               : chr [1:48723] "93716481" "49020929" "52690950" "23199751" ...
+ $ age                       : num [1:48723] 44 44 45 45 44 45 44 44 45 44 ...
+ $ gender                    : Factor w/ 3 levels "Female","Male",..: 2 2 2 2 1 1 2 2 2 2 ...
+ $ location                  : Factor w/ 18 levels "Armenia, Quindío",..: 14 5 2 3 3 3 3 3 6 3 ...
+ $ income_bracket            : Factor w/ 4 levels "High","Low","Medium",..: 4 3 1 1 3 3 3 3 3 3 ...
+ $ occupation                : Factor w/ 35 levels "Accountant","Architect",..: 14 8 8 13 7 2 7 3 16 19 ...
+ $ education_level           : Factor w/ 4 levels "Bachelor","High School",..: 3 1 1 2 1 4 3 1 3 1 ...
+ $ marital_status            : Factor w/ 4 levels "Divorced","Married",..: 2 2 2 3 2 2 3 2 3 3 ...
+ $ household_size            : num [1:48723] 5 2 4 2 3 4 4 3 1 3 ...
+ $ acquisition_channel       : Factor w/ 4 levels "Organic","Paid Ad",..: 3 2 2 4 2 4 1 4 1 2 ...
+ $ customer_segment          : Factor w/ 4 levels "inactive","occasional",..: 2 4 1 1 3 1 1 4 1 3 ...
+ $ savings_account           : logi [1:48723] TRUE TRUE TRUE TRUE TRUE TRUE ...
+ $ credit_card               : logi [1:48723] TRUE FALSE FALSE FALSE TRUE TRUE ...
+ $ personal_loan             : logi [1:48723] FALSE FALSE FALSE FALSE FALSE FALSE ...
+ $ investment_account        : logi [1:48723] FALSE FALSE TRUE TRUE FALSE TRUE ...
+ $ insurance_product         : logi [1:48723] TRUE FALSE TRUE FALSE FALSE FALSE ...
+ $ active_products           : num [1:48723] 1 5 3 2 1 1 1 4 2 3 ...
+ $ app_logins_frequency      : num [1:48723] 15 30 4 15 19 15 44 22 7 11 ...
+ $ feature_usage_diversity   : num [1:48723] 3 0 4 4 1 4 6 1 1 6 ...
+ $ bill_payment_user         : logi [1:48723] FALSE TRUE TRUE TRUE FALSE TRUE ...
+ $ auto_savings_enabled      : logi [1:48723] FALSE FALSE FALSE FALSE FALSE TRUE ...
+ $ credit_utilization_ratio  : num [1:48723] 0.179 NA NA NA 0.404 ...
+ $ international_transactions: num [1:48723] 1 1 1 1 0 0 0 0 0 1 ...
+ $ failed_transactions       : num [1:48723] 0 0 0 1 0 0 1 1 0 0 ...
+ $ tx_count                  : num [1:48723] 76 10 10 23 18 15 24 45 134 13 ...
+ $ avg_tx_value              : num [1:48723] 1679872 5445810 640335 660180 14574469 ...
+ $ total_tx_volume           : num [1:48723] 1.28e+08 5.45e+07 6.40e+06 1.52e+07 2.62e+08 ...
+ $ first_tx                  : Date[1:48723], format: "2023-01-05" "2023-02-05" ...
+ $ last_tx                   : Date[1:48723], format: "2023-12-25" "2023-12-20" ...
+ $ base_satisfaction         : num [1:48723] 9.21 6.07 8.2 7.53 6.61 ...
+ $ tx_satisfaction           : num [1:48723] 0.38 0.05 0.05 0.115 0.09 0.075 0.12 0.225 0.67 0.065 ...
+ $ product_satisfaction      : num [1:48723] 0.6 0.2 0.6 0.4 0.4 0.6 0.4 0.4 0.6 0.8 ...
+ $ satisfaction_score        : num [1:48723] 5 3 4 4 3 4 4 4 5 4 ...
+ $ nps_score                 : num [1:48723] -7 -46 -29 -31 -47 -29 -34 -36 -4 -27 ...
+ $ last_survey_date          : Date[1:48723], format: "2023-12-16" "2023-05-05" ...
+ $ support_tickets_count     : num [1:48723] 1 1 0 2 2 1 1 0 2 0 ...
+ $ resolved_tickets_ratio    : num [1:48723] 0 1 0 0.5 1 1 1 0 1 0 ...
+ $ app_store_rating          : num [1:48723] 3.5 4 5 4.5 4 4 5 4.5 4.5 4.5 ...
+ $ feedback_sentiment        : Factor w/ 3 levels "Negative","Neutral",..: 2 3 3 3 3 3 3 3 3 3 ...
+ $ feature_requests          : chr [1:48723] "Budgeting tools" NA NA "Cryptocurrency trading, Budgeting tools" ...
+ $ complaint_topics          : chr [1:48723] NA NA NA NA ...
+ $ clv_segment               : Factor w/ 4 levels "Bronze","Gold",..: 2 1 2 1 2 1 1 3 3 3 ...
+ $ monthly_transaction_count : num [1:48723] 1.43 1.57 2.5 1.56 2.11 ...
+ $ average_transaction_value : num [1:48723] 6054025 2127414 3575915 1513354 612674 ...
+ $ total_transaction_volume  : num [1:48723] 60540250 23401550 35759150 21186950 11640800 ...
+ $ transaction_frequency     : num [1:48723] 0.0308 0.0329 0.05 0.0478 0.0619 ...
+ $ last_transaction_date     : Date[1:48723], format: "2023-12-05" "2023-12-18" ...
+ $ preferred_transaction_type: Factor w/ 4 levels "Deposit","Payment",..: 3 3 3 3 2 3 2 3 3 3 ...
+ $ first_transaction_date    : Date[1:48723], format: "2023-01-05" "2023-02-05" ...
+ $ weekend_transaction_ratio : num [1:48723] 0.3 0.182 0.3 0.143 0.316 ...
+ $ avg_daily_transactions    : num [1:48723] 0.0308 0.0329 0.05 0.0478 0.0619 ...
+ $ customer_tenure           : num [1:48723] 11.63 11.5 8.77 10.73 11.63 ...
+ $ churn_probability         : num [1:48723] 0.362 0.182 0.321 0.337 0.398 ...
+ $ customer_lifetime_value   : num [1:48723] 3.12e+08 1.67e+08 1.94e+07 3.60e+07 3.05e+08 ...
+ - attr(*, "spec")=
+  .. cols(
+  ..   customer_id = col_double(),
+  ..   age = col_double(),
+  ..   gender = col_character(),
+  ..   location = col_character(),
+  ..   income_bracket = col_character(),
+  ..   occupation = col_character(),
+  ..   education_level = col_character(),
+  ..   marital_status = col_character(),
+  ..   household_size = col_double(),
+  ..   acquisition_channel = col_character(),
+  ..   customer_segment = col_character(),
+  ..   savings_account = col_logical(),
+  ..   credit_card = col_logical(),
+  ..   personal_loan = col_logical(),
+  ..   investment_account = col_logical(),
+  ..   insurance_product = col_logical(),
+  ..   active_products = col_double(),
+  ..   app_logins_frequency = col_double(),
+  ..   feature_usage_diversity = col_double(),
+  ..   bill_payment_user = col_logical(),
+  ..   auto_savings_enabled = col_logical(),
+  ..   credit_utilization_ratio = col_double(),
+  ..   international_transactions = col_double(),
+  ..   failed_transactions = col_double(),
+  ..   tx_count = col_double(),
+  ..   avg_tx_value = col_double(),
+  ..   total_tx_volume = col_double(),
+  ..   first_tx = col_date(format = ""),
+  ..   last_tx = col_date(format = ""),
+  ..   base_satisfaction = col_double(),
+  ..   tx_satisfaction = col_double(),
+  ..   product_satisfaction = col_double(),
+  ..   satisfaction_score = col_double(),
+  ..   nps_score = col_double(),
+  ..   last_survey_date = col_date(format = ""),
+  ..   support_tickets_count = col_double(),
+  ..   resolved_tickets_ratio = col_double(),
+  ..   app_store_rating = col_double(),
+  ..   feedback_sentiment = col_character(),
+  ..   feature_requests = col_character(),
+  ..   complaint_topics = col_character(),
+  ..   clv_segment = col_character(),
+  ..   monthly_transaction_count = col_double(),
+  ..   average_transaction_value = col_double(),
+  ..   total_transaction_volume = col_double(),
+  ..   transaction_frequency = col_double(),
+  ..   last_transaction_date = col_date(format = ""),
+  ..   preferred_transaction_type = col_character(),
+  ..   first_transaction_date = col_date(format = ""),
+  ..   weekend_transaction_ratio = col_double(),
+  ..   avg_daily_transactions = col_double(),
+  ..   customer_tenure = col_double(),
+  ..   churn_probability = col_double(),
+  ..   customer_lifetime_value = col_double()
+  .. )
+ - attr(*, "problems")=&lt;externalptr&gt; </code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The data set contains two sets of transaction metrics. The variables&nbsp;<em>avg_tx_value</em>,&nbsp;<em>total_tx_volume, first_tx, last_tx</em>&nbsp;represent aggregated transaction behaviour derived from the transaction dataset. A second set of transaction-related variables (average_transaction_value, total_transaction_volume, first_transaction_date, last_transaction_date) appears to represent derived behavioural metrics and will not be used in the analysis to avoid duplication. Additionally, transaction_frequency and avg_daily_transactions both calculate the average number of transactions per day, hence only avg_daily_transactions will be used for analysis.</p>
+</div>
+</div>
+<p>Finally, the cleaned data set is stored as “<strong><em>cleaned_data.csv</em></strong>”, which is used for the further analysis.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<script src="site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

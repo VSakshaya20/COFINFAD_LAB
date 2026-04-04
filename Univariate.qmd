@@ -1,0 +1,148 @@
+---
+title: "Variable Distribution Analysis"
+author: "Nazia Faisalkhan Faruqui"
+execute: 
+  eval: true
+  echo: true
+  warning: false
+  message: false
+  freeze: true
+---
+
+# Overview
+
+This module focuses on understanding the distribution and characteristics of individual variables using exploratory data analysis (EDA). As there are no predefined benchmarks, confirmatory analysis will not be applicable.
+
+# Packages Required
+
+| Package | Reason for selection |
+|----|----|
+| **tidyverse** | Selected as the core package for data manipulation, cleaning, and visualisation (dplyr, ggplot2, tidyr) |
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+pacman::p_load(tidyverse, ggplot2)
+df <- read_csv("COFINFAD_LAB/data/cleaned_data.csv")
+```
+
+# Demographics
+
+This section examines the distribution of demographic variables that describe the characteristics of the customer base. The variables include *age*, *gender*, *location*, *income_bracket*, *education_level*, *marital_status*, *occupation*, and *household_size*.
+
+We use bar charts for categorical variables to understand the composition of the customer base.
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-align: 'center'
+gender_counts <- df %>%
+  count(gender)
+
+ggplot(gender_counts, aes(x = gender, y = n)) + 
+  geom_col(fill = "#3498db") + 
+  geom_text(aes(label = n),
+            vjust = -0.3) +
+  labs(x = "Gender", y = "Number of Customers") +
+  theme_minimal()
+```
+
+# Transaction Behaviour
+
+This section explores variables related to customer financial activity. Key variables include *tx_count*, *avg_tx_value*, *total_tx_volume, preferred_transaction_type, avg_daily_transactions,* and *weekend_transaction_ratio.*
+
+We use histograms to examine distributions, along with bar charts for categorical variables such as transaction type.
+
+::: panel-tabset
+## Histogram
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-align: 'center'
+ggplot(df, aes(x = avg_tx_value)) +
+  geom_histogram(fill = "#2ecc71", bins = 30) +
+  labs(x = "Average Transaction Value", y = "Frequency") +
+  theme_minimal()
+```
+
+## Bar Chart
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-align: 'center'
+ggplot(df, aes(x = preferred_transaction_type)) +
+  geom_bar(fill = "#2ecc71") +
+  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5) +
+  labs(x = "Preferred Transaction Type", y = "Count") +
+  theme_minimal()
+```
+:::
+
+# Product Ownership
+
+This section analyses the distribution of financial products held by customers. Relevant variables include *savings_account*, *credit_card*, *personal_loan*, *investment_account*, *insurance_product*, and *active_products*.
+
+We use bar charts to analyse adoption of financial products.
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-align: 'center'
+ggplot(df, aes(x = active_products)) +
+  geom_bar(fill = "#e67e22") +
+  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5) +
+  labs(x = "Number of Active Products", y = "Count") +
+  theme_minimal()
+```
+
+# App Usage and Engagement
+
+This section examines variables related to customer interaction with the digital platform. These include *app_logins_frequency*, *feature_usage_diversity*, *bill_payment_user*, *auto_savings_enabled*.
+
+We use bar charts to analyse platform engagement features.
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-align: 'center'
+ggplot(df, aes(x = app_logins_frequency)) +
+  geom_bar(fill = "#1abc9c") +
+  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5) +
+  labs(x = "App Logins Freqeuncy", y = "Count") +
+  theme_minimal()
+```
+
+# Customer Satisfaction
+
+This section explores customer experience indicators including *satisfaction_score*, *nps_score*, *base_satisfaction, tx_satisfaction, product_satisfaction,* *app_store_rating*, *feedback_sentiment*.
+
+We use histograms to examine distributions, along with bar charts for categorical variables such as satisfaction score.
+
+::: panel-tabset
+## Histogram
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-align: 'center'
+ggplot(df, aes(x = base_satisfaction)) +
+  geom_histogram(fill = "#9b59b6", bins = 30) +
+  labs(x = "Base Satisfaction ", y = "Frequency") +
+  theme_minimal()
+```
+
+## Bar Chart
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-align: 'center'
+ggplot(df, aes(x = satisfaction_score)) +
+  geom_bar(fill = "#9b59b6") +
+  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5) +
+  labs(x = "App Logins Freqeuncy", y = "Count") +
+  theme_minimal()
+```
+:::

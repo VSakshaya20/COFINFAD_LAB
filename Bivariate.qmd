@@ -1,0 +1,241 @@
+---
+title: "Comparative Analysis"
+author: "Nazia Faisalkhan Faruqui"
+execute: 
+  eval: true
+  echo: true
+  warning: false
+  message: false
+  freeze: true
+---
+
+# Overview
+
+This module examines relationships between variables using both visual and statistical techniques.
+
+-   **Categorical vs Numerical:** We use boxplots, violin/raincloud plots, and ridgeline plots to compare distributions across groups. Statistical tests (e.g., ANOVA or Kruskal–Wallis) will be applied to assess significance.
+
+-   **Numerical vs Numerical:** We use scatter plots with trend lines to visualise relationships, supported by correlation-based analysis.
+
+-   **Categorical vs Categorical:** We use stacked bar charts and mosaic plots to examine associations, with chi-square tests applied for validation.
+
+-   **Multivariate Overview:** We use a correlation matrix to provide a summary of relationships across multiple numerical variables.
+
+# Packages Required
+
+| Package | Reason for selection |
+|----|----|
+| **tidyverse** | Selected as the core package for data manipulation, cleaning, and visualisation (dplyr, ggplot2, tidyr) |
+| **ggstatsplot** | Selected because it automatically integrates statistical tests, effect sizes, and confidence intervals into visualisations, reducing the need for separate statistical coding. |
+| **ggdist** | Selected for advanced distribution visualisations such as raincloud plots and half-eye plots. |
+| **ggridges** | Selected for visualising ridge plots to visualise distributions across multiple groups |
+| **ggmosaic** | Selected for visualising mosaic plots for categorical vs categorical relationships |
+| **corrplot** | Selected for visualising correlation plot between multiple variables |
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+pacman::p_load(tidyverse, ggstatsplot, ggdist, ggridges, ggmosaic, corrplot)
+df <- read_csv("COFINFAD_LAB/data/cleaned_data.csv")
+```
+
+# Categorical vs Numerical Variables
+
+This section compare the values of a numeric variable across the categories of another variable.
+
+For example, *average transaction value* can be compared across income brackets to observe whether higher-income customers tend to perform higher-value transactions. Visualisations such as raincloud plots, violin plots, or boxplots are used to illustrate the distribution of values across categories. Ridgeline plots are also quite useful when the categories are many, for e.g. location.
+
+::: panel-tabset
+## Box Plot
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-align: 'center'
+ggplot(df, aes(x = income_bracket, y = active_products)) +
+  geom_boxplot(fill = "#9e68aa", outliers = FALSE) +
+  coord_flip()
+```
+
+## Violin Plot
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-align: 'center'
+ggplot(df, aes(x = income_bracket, y = app_logins_frequency)) +
+  geom_violin(fill = "#25238d") +
+  coord_flip()
+```
+
+## Raincloud Plot
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-align: 'center'
+ggplot(df, aes(x = income_bracket, y = avg_tx_value)) +  
+     stat_halfeye(adjust = 0.5,
+               justification = -0.2,
+               .width = 0,
+               point_colour = NA) +
+  geom_boxplot(width = .20,
+               outlier.shape = NA) +
+  stat_dots(side = "left", 
+            justification = 1.2, 
+            binwidth = .5,
+            dotsize = 1.5) +
+  coord_flip()
+```
+
+## Ridgeline Plot
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-align: 'center'
+ggplot(df,
+       aes(x = avg_tx_value, 
+           y = location
+           )) +
+  stat_density_ridges(
+    geom = "density_ridges_gradient",
+    calc_ecdf = TRUE, 
+    quantiles = 4,
+    quantile_lines = TRUE) +
+  theme_ridges()
+```
+:::
+
+# Numerical vs Numerical Variables
+
+When both variables are numeric, the objective is to examine whether a relationship exists between the two variables.
+
+For example, application login frequency and monthly transaction count may be related if customers who interact with the application more frequently also perform more transactions.
+
+Scatter plots are used to visualise such relationships.
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-align: 'center'
+ggplot(df,
+       aes(x = app_logins_frequency,
+           y = avg_daily_transactions))+
+  geom_point(alpha = 0.6) +
+  geom_smooth()
+```
+
+# Categorical vs Categorical Variables
+
+When both variables are categorical, the goal is to examine whether there is an association between the categories.
+
+For example, the relationship between income bracket and preferred transaction type may reveal whether customers with different income levels prefer different transaction behaviours.
+
+Bar charts and mosaic plots will be used to visualise such relationships.
+
+::: panel-tabset
+## Bar Chart
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-align: 'center'
+ggplot(df,
+       aes(x = income_bracket,
+           fill = preferred_transaction_type)) +
+  geom_bar(position = "fill") +
+  labs(y = "Proportion")
+```
+
+## Mosaic Plot
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-align: 'center'
+ggplot(data = df) +
+  geom_mosaic(
+    aes(x = product(income_bracket),
+        fill = preferred_transaction_type)
+  ) +
+  labs(
+    title = "Relationship Between Income Bracket and Preferred Transaction Type",
+    x = "Income Bracket",
+    y = "Proportion"
+  )
+```
+:::
+
+# Statistical Validity
+
+For each of the visualisation options described above, statistical validity tests can be performed, by selecting the type of test (parametric/non parametric) and the confidence interval.
+
+Based on the type of variables analysed, the different plots are shown.
+
+::: panel-tabset
+## Categorical vs Numerical
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-align: 'center'
+ggbetweenstats(            
+  data = df,
+  x = income_bracket,
+  y = avg_tx_value,
+  type = "nonparametric",  
+  conf.level = 0.99        
+)
+```
+
+## Numerical vs Numerical
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-align: 'center'
+ggscatterstats(
+  data = df,
+  x = app_logins_frequency,
+  y = avg_daily_transactions,
+  marginal = FALSE
+)
+```
+
+## Categorical vs Categorical
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-align: 'center'
+ggbarstats(
+  data = df,
+  x = income_bracket,
+  y = preferred_transaction_type,
+  conf.level = 0.99
+)
+```
+:::
+
+# Multivariate Analysis
+
+To visualise the relationship between more than two variables, correlation plots can be used.
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-align: 'center'
+selected_data <- df[, c("age", "household_size", "active_products", "app_logins_frequency", "feature_usage_diversity"), drop = FALSE]
+
+corr_matrix <- cor(selected_data, method = "pearson", use = "complete.obs")
+
+corrplot(corr_matrix, method = "ellipse",
+type = "full",
+order = "original",
+diag = TRUE,
+addCoef.col = "black",
+tl.col = "black",
+tl.srt = 90,
+col = colorRampPalette(c("#b2182b", "white", "#2166ac"))(200) )
+```
