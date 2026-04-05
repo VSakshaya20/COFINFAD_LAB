@@ -270,14 +270,9 @@ ui <- dashboardPage(
                 column(3,
                        h4("Step 1: Visualisation"),
                        uiOutput("bivar_inputs"),
-                       uiOutput("plot_selector"),
-                       actionButton("eda_btn", "Analyse"),
                        
-                       br(), br(),
                        
-                       h4("Step 2: Statistical Validity"),
-                       uiOutput("stat_controls"),
-                       actionButton("cda_btn", "Analyse")
+                       uiOutput("stat_controls")
                 ),
                 
                 # RIGHT PANEL (tabs)
@@ -326,6 +321,29 @@ ui <- dashboardPage(
                 column(3, controls_ui("demo", var_pools$demo, 4)),
                 column(9,
                        tabsetPanel(
+                         tabPanel("Cluster Evaluation",
+                                  h4("Cluster Evaluation"),
+                                  p("The silhouette plot measures how well each customer fits their assigned cluster. Each bar 
+                                  (or filled region) represents individual customers within a cluster, and the red dashed line 
+                                    marks the overall average silhouette width."),
+                                  
+                                  plotOutput("plot_demo_sil", height = "300px"),
+                                  
+                                  tags$details(
+                                    style = "margin-top: 10px;",
+                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                 "Click here to understand how to interpret the plot"
+                                    ),
+                                    tags$ul(
+                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                      tags$li("Scores close to 1 indicate a customer is well-matched to their cluster and clearly separated from neighbouring clusters"),
+                                      tags$li("Negative scores suggest the customer may have been assigned to the wrong cluster"),
+                                      tags$li("Clusters where most members exceed the average line are well-defined; clusters with many members falling below it may benefit from a different value of k"),
+                                      tags$li("A mean silhouette width above 0.5 reflects strong structure; 0.25–0.5 is moderate; below 0.25 suggests weak or arbitrary groupings")
+                                    )
+                                  )
+                         ),
+                         
                          tabPanel("Cluster Plot",
                                   h4("Cluster Plot"),
                                   p("This plot projects all customers onto a 2D space using Principal Component Analysis (PCA),
@@ -347,7 +365,7 @@ ui <- dashboardPage(
                                       tags$li("Heavily overlapping clusters suggest the variables may not clearly distinguish customer groups"),
                                       tags$li("Silhouette Width: Higher is better (max = 1); values above 0.5 indicate strong cluster separation, 0.25–0.5 is moderate."),
                                       tags$li("Entropy: Lower is better; indicates meaningfully uneven cluster sizes rather than arbitrary equal splits."),
-                                      tags$li("AIC / BIC: Lower is better; a drop as k increases suggests real structure; a plateau suggests overfitting. N/A for CLARA-based clustering.")
+                                      tags$li("AIC / BIC: N/A for CLARA-based clustering.")
                                       )
                                     )
                                   ),
@@ -371,52 +389,6 @@ ui <- dashboardPage(
                                       tags$li("Very small clusters (<10%) may represent genuine niche segments or outliers; inspect their profiles carefully before acting on them")
                                       )
                                     )
-                                  ),
-                         
-                         tabPanel("Within-Cluster Profiles",
-                                  h4("Within-Cluster Profiles"),
-                                  p("This heatmap displays the mean value of each variable for each cluster. The colour reflects
-                                  the scaled mean across clusters; red indicates this cluster scores relatively high on that
-                                    variable, blue indicates relatively low. The raw mean is shown as a number inside each cell."),
-                                  
-                                  plotOutput("plot_demo_heatmap", height = "350px"),
-                                  
-                                  tags$details(
-                                    style = "margin-top: 10px;",
-                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
-                                                 "Click here to understand how to interpret the plot"
-                                                 ),
-                                    tags$ul(
-                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
-                                      tags$li("Red cells identify the defining characteristics of a cluster; what makes it distinct"),
-                                      tags$li("Blue cells highlight what a cluster lacks relative to others"),
-                                      tags$li("Variables with little colour variation across all clusters (all near white) are not driving the segmentation and could potentially be removed"),
-                                      tags$li("Use this plot to assign meaningful labels to clusters (e.g. High Spenders, Weekend Users)")
-                                      )
-                                    )
-                                  ),
-                         
-                         tabPanel("Cluster Evaluation",
-                                  h4("Cluster Evaluation"),
-                                  p("The silhouette plot measures how well each customer fits their assigned cluster. Each bar 
-                                  (or filled region) represents individual customers within a cluster, and the red dashed line 
-                                    marks the overall average silhouette width."),
-                                  
-                                  plotOutput("plot_demo_sil", height = "300px"),
-                                  
-                                  tags$details(
-                                    style = "margin-top: 10px;",
-                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
-                                                 "Click here to understand how to interpret the plot"
-                                                 ),
-                                    tags$ul(
-                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
-                                      tags$li("Scores close to 1 indicate a customer is well-matched to their cluster and clearly separated from neighbouring clusters"),
-                                      tags$li("Negative scores suggest the customer may have been assigned to the wrong cluster"),
-                                      tags$li("Clusters where most members exceed the average line are well-defined; clusters with many members falling below it may benefit from a different value of k"),
-                                      tags$li("A mean silhouette width above 0.5 reflects strong structure; 0.25–0.5 is moderate; below 0.25 suggests weak or arbitrary groupings")
-                                      )
-                                    )
                                   )
                          )
                        )
@@ -428,6 +400,55 @@ ui <- dashboardPage(
                 column(3, controls_ui("trans", var_pools$trans, 4)),
                 column(9,
                        tabsetPanel(
+                         tabPanel("Cluster Evaluation",
+                                  h4("Cluster Evaluation"),
+                                  fluidRow(
+                                    column(6,
+                                           p("The elbow plot helps determine the optimal number of clusters (k) by showing how total 
+                                    within-cluster sum of squares (WSS) decreases as k increases. A lower WSS indicates that 
+                                      customers within each cluster are more similar to one another."),
+                                           
+                                           plotOutput("plot_trans_elbow", height = "300px"),
+                                           
+                                           tags$details(
+                                             style = "margin-top: 10px;",
+                                             tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                          "Click here to understand how to interpret the plot"
+                                             ),
+                                             tags$ul(
+                                               style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                               tags$li("A sharp drop in WSS as k increases suggests each additional cluster is capturing meaningful structure in the data"),
+                                               tags$li("The elbow, where the rate of decrease slows and the curve begins to flatten, indicates the optimal k, beyond which adding more clusters yields diminishing returns"),
+                                               tags$li("A gradual curve with no clear elbow suggests the data does not have strong natural cluster structure, and any choice of k is somewhat arbitrary"),
+                                               tags$li("Use this plot alongside the silhouette plot to confirm your choice of k. The optimal k from the elbow plot should ideally also correspond to a higher silhouette width")
+                                             )
+                                           )
+                                    ),
+                                    
+                                    column(6,
+                                           p("The silhouette plot measures how well each customer fits their assigned cluster. Each bar 
+                                    (or filled region) represents individual customers within a cluster, and the red dashed line 
+                                      marks the overall average silhouette width."),
+                                           
+                                           plotOutput("plot_trans_sil", height = "300px"),
+                                           
+                                           tags$details(
+                                             style = "margin-top: 10px;",
+                                             tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                          "Click here to understand how to interpret the plot"
+                                             ),
+                                             tags$ul(
+                                               style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                               tags$li("Scores close to 1 indicate a customer is well-matched to their cluster and clearly separated from neighbouring clusters"),
+                                               tags$li("Negative scores suggest the customer may have been assigned to the wrong cluster"),
+                                               tags$li("Clusters where most members exceed the average line are well-defined; clusters with many members falling below it may benefit from a different value of k"),
+                                               tags$li("A mean silhouette width above 0.5 reflects strong structure; 0.25–0.5 is moderate; below 0.25 suggests weak or arbitrary groupings")
+                                             )
+                                           )
+                                    )
+                                  )
+                         ),
+                         
                          tabPanel("Cluster Plot",
                                   h4("Cluster Plot"),
                                   p("This plot projects all customers onto a 2D space using Principal Component Analysis (PCA),
@@ -449,7 +470,7 @@ ui <- dashboardPage(
                                       tags$li("Heavily overlapping clusters suggest the variables may not clearly distinguish customer groups"),
                                       tags$li("Silhouette Width: Higher is better (max = 1); values above 0.5 indicate strong cluster separation, 0.25–0.5 is moderate."),
                                       tags$li("Entropy: Lower is better; indicates meaningfully uneven cluster sizes rather than arbitrary equal splits."),
-                                      tags$li("AIC / BIC: Lower is better; a drop as k increases suggests real structure; a plateau suggests overfitting. N/A for CLARA-based clustering.")
+                                      tags$li("AIC / BIC: Lower is better; a drop as k increases suggests real structure; a plateau suggests overfitting.")
                                       )
                                     )
                                   ),
@@ -473,79 +494,7 @@ ui <- dashboardPage(
                                       tags$li("Very small clusters (<10%) may represent genuine niche segments or outliers; inspect their profiles carefully before acting on them")
                                       )
                                     )
-                                  ),
-                         
-                         tabPanel("Within-Cluster Profiles",
-                                  h4("Within-Cluster Profiles"),
-                                  p("This heatmap displays the mean value of each variable for each cluster. The colour reflects
-                                  the scaled mean across clusters; red indicates this cluster scores relatively high on that
-                                    variable, blue indicates relatively low. The raw mean is shown as a number inside each cell."),
-                                  
-                                  plotOutput("plot_trans_heatmap", height = "350px"),
-                                  
-                                  tags$details(
-                                    style = "margin-top: 10px;",
-                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
-                                                 "Click here to understand how to interpret the plot"
-                                                 ),
-                                    tags$ul(
-                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
-                                      tags$li("Red cells identify the defining characteristics of a cluster; what makes it distinct"),
-                                      tags$li("Blue cells highlight what a cluster lacks relative to others"),
-                                      tags$li("Variables with little colour variation across all clusters (all near white) are not driving the segmentation and could potentially be removed"),
-                                      tags$li("Use this plot to assign meaningful labels to clusters (e.g. High Spenders, Weekend Users)")
-                                      )
-                                    )
-                                  ),
-                         
-                         tabPanel("Cluster Evaluation",
-                                  h4("Cluster Evaluation"),
-                                  fluidRow(
-                                    column(6,
-                                    p("The elbow plot helps determine the optimal number of clusters (k) by showing how total 
-                                    within-cluster sum of squares (WSS) decreases as k increases. A lower WSS indicates that 
-                                      customers within each cluster are more similar to one another."),
-                                    
-                                    plotOutput("plot_trans_elbow", height = "300px"),
-                                    
-                                    tags$details(
-                                      style = "margin-top: 10px;",
-                                      tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
-                                                   "Click here to understand how to interpret the plot"
-                                                   ),
-                                      tags$ul(
-                                        style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
-                                        tags$li("A sharp drop in WSS as k increases suggests each additional cluster is capturing meaningful structure in the data"),
-                                        tags$li("The elbow, where the rate of decrease slows and the curve begins to flatten, indicates the optimal k, beyond which adding more clusters yields diminishing returns"),
-                                        tags$li("A gradual curve with no clear elbow suggests the data does not have strong natural cluster structure, and any choice of k is somewhat arbitrary"),
-                                        tags$li("Use this plot alongside the silhouette plot to confirm your choice of k. The optimal k from the elbow plot should ideally also correspond to a higher silhouette width")
-                                        )
-                                      )
-                                    ),
-                                    
-                                    column(6,
-                                    p("The silhouette plot measures how well each customer fits their assigned cluster. Each bar 
-                                    (or filled region) represents individual customers within a cluster, and the red dashed line 
-                                      marks the overall average silhouette width."),
-                                    
-                                    plotOutput("plot_trans_sil", height = "300px"),
-                                    
-                                    tags$details(
-                                      style = "margin-top: 10px;",
-                                      tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
-                                                   "Click here to understand how to interpret the plot"
-                                                   ),
-                                      tags$ul(
-                                        style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
-                                        tags$li("Scores close to 1 indicate a customer is well-matched to their cluster and clearly separated from neighbouring clusters"),
-                                        tags$li("Negative scores suggest the customer may have been assigned to the wrong cluster"),
-                                        tags$li("Clusters where most members exceed the average line are well-defined; clusters with many members falling below it may benefit from a different value of k"),
-                                        tags$li("A mean silhouette width above 0.5 reflects strong structure; 0.25–0.5 is moderate; below 0.25 suggests weak or arbitrary groupings")
-                                        )
-                                    )
-                                    )
                                   )
-                         )
                        )
                 )
               )
@@ -556,6 +505,29 @@ ui <- dashboardPage(
                 column(3, controls_ui("usage", var_pools$usage, 4)),
                 column(9,
                        tabsetPanel(
+                         tabPanel("Cluster Evaluation",
+                                  h4("Cluster Evaluation"),
+                                  p("The silhouette plot measures how well each customer fits their assigned cluster. Each bar 
+                                  (or filled region) represents individual customers within a cluster, and the red dashed line 
+                                    marks the overall average silhouette width."),
+                                  
+                                  plotOutput("plot_usage_sil", height = "300px"),
+                                  
+                                  tags$details(
+                                    style = "margin-top: 10px;",
+                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                 "Click here to understand how to interpret the plot"
+                                    ),
+                                    tags$ul(
+                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                      tags$li("Scores close to 1 indicate a customer is well-matched to their cluster and clearly separated from neighbouring clusters"),
+                                      tags$li("Negative scores suggest the customer may have been assigned to the wrong cluster"),
+                                      tags$li("Clusters where most members exceed the average line are well-defined; clusters with many members falling below it may benefit from a different value of k"),
+                                      tags$li("A mean silhouette width above 0.5 reflects strong structure; 0.25–0.5 is moderate; below 0.25 suggests weak or arbitrary groupings")
+                                    )
+                                  )
+                         ),
+                         
                          tabPanel("Cluster Plot",
                                   h4("Cluster Plot"),
                                   p("This plot projects all customers onto a 2D space using Principal Component Analysis (PCA),
@@ -577,7 +549,7 @@ ui <- dashboardPage(
                                      tags$li("Heavily overlapping clusters suggest the variables may not clearly distinguish customer groups"),
                                      tags$li("Silhouette Width: Higher is better (max = 1); values above 0.5 indicate strong cluster separation, 0.25–0.5 is moderate."),
                                      tags$li("Entropy: Lower is better; indicates meaningfully uneven cluster sizes rather than arbitrary equal splits."),
-                                     tags$li("AIC / BIC: Lower is better; a drop as k increases suggests real structure; a plateau suggests overfitting. N/A for CLARA-based clustering.")
+                                     tags$li("AIC / BIC: N/A for CLARA-based clustering.")
                                      )
                                    )
                                   ),
@@ -600,52 +572,6 @@ ui <- dashboardPage(
                                       tags$li("Very small clusters (<10%) may represent genuine niche segments or outliers; inspect their profiles carefully before acting on them")
                                       )
                                     )
-                                  ),
-                         
-                         tabPanel("Within-Cluster Profiles",
-                                  h4("Within-Cluster Profiles"),
-                                  p("This heatmap displays the mean value of each variable for each cluster. The colour reflects
-                                  the scaled mean across clusters; red indicates this cluster scores relatively high on that
-                                    variable, blue indicates relatively low. The raw mean is shown as a number inside each cell."),
-                                  
-                                  plotOutput("plot_usage_heatmap", height = "350px"),
-                                  
-                                  tags$details(
-                                    style = "margin-top: 10px;",
-                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
-                                                 "Click here to understand how to interpret the plot"
-                                                 ),
-                                    tags$ul(
-                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
-                                      tags$li("Red cells identify the defining characteristics of a cluster; what makes it distinct"),
-                                      tags$li("Blue cells highlight what a cluster lacks relative to others"),
-                                      tags$li("Variables with little colour variation across all clusters (all near white) are not driving the segmentation and could potentially be removed"),
-                                      tags$li("Use this plot to assign meaningful labels to clusters (e.g. High Spenders, Weekend Users)")
-                                      )
-                                  )
-                         ),
-                         
-                         tabPanel("Cluster Evaluation",
-                                  h4("Cluster Evaluation"),
-                                  p("The silhouette plot measures how well each customer fits their assigned cluster. Each bar 
-                                  (or filled region) represents individual customers within a cluster, and the red dashed line 
-                                    marks the overall average silhouette width."),
-                                  
-                                  plotOutput("plot_usage_sil", height = "300px"),
-                                  
-                                  tags$details(
-                                    style = "margin-top: 10px;",
-                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
-                                                 "Click here to understand how to interpret the plot"
-                                                 ),
-                                    tags$ul(
-                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
-                                      tags$li("Scores close to 1 indicate a customer is well-matched to their cluster and clearly separated from neighbouring clusters"),
-                                      tags$li("Negative scores suggest the customer may have been assigned to the wrong cluster"),
-                                      tags$li("Clusters where most members exceed the average line are well-defined; clusters with many members falling below it may benefit from a different value of k"),
-                                      tags$li("A mean silhouette width above 0.5 reflects strong structure; 0.25–0.5 is moderate; below 0.25 suggests weak or arbitrary groupings")
-                                      )
-                                    )
                                   )
                          )
                        )
@@ -658,6 +584,55 @@ ui <- dashboardPage(
                 column(3, controls_ui("sat", var_pools$sat, 4)),
                 column(9,
                        tabsetPanel(
+                         tabPanel("Cluster Evaluation",
+                                  h4("Cluster Evaluation"),
+                                  fluidRow(
+                                    column(6,
+                                           p("The elbow plot helps determine the optimal number of clusters (k) by showing how total 
+                                    within-cluster sum of squares (WSS) decreases as k increases. A lower WSS indicates that 
+                                      customers within each cluster are more similar to one another."),
+                                           
+                                           plotOutput("plot_sat_elbow", height = "300px"),
+                                           
+                                           tags$details(
+                                             style = "margin-top: 10px;",
+                                             tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                          "Click here to understand how to interpret the plot"
+                                             ),
+                                             tags$ul(
+                                               style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                               tags$li("A sharp drop in WSS as k increases suggests each additional cluster is capturing meaningful structure in the data"),
+                                               tags$li("The elbow, where the rate of decrease slows and the curve begins to flatten, indicates the optimal k, beyond which adding more clusters yields diminishing returns"),
+                                               tags$li("A gradual curve with no clear elbow suggests the data does not have strong natural cluster structure, and any choice of k is somewhat arbitrary"),
+                                               tags$li("Use this plot alongside the silhouette plot to confirm your choice of k. The optimal k from the elbow plot should ideally also correspond to a higher silhouette width")
+                                             )
+                                           )
+                                    ),
+                                    
+                                    column(6,
+                                           p("The silhouette plot measures how well each customer fits their assigned cluster. Each bar 
+                                    (or filled region) represents individual customers within a cluster, and the red dashed line 
+                                      marks the overall average silhouette width."),
+                                           
+                                           plotOutput("plot_sat_sil", height = "300px"),
+                                           
+                                           tags$details(
+                                             style = "margin-top: 10px;",
+                                             tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
+                                                          "Click here to understand how to interpret the plot"
+                                             ),
+                                             tags$ul(
+                                               style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
+                                               tags$li("Scores close to 1 indicate a customer is well-matched to their cluster and clearly separated from neighbouring clusters"),
+                                               tags$li("Negative scores suggest the customer may have been assigned to the wrong cluster"),
+                                               tags$li("Clusters where most members exceed the average line are well-defined; clusters with many members falling below it may benefit from a different value of k"),
+                                               tags$li("A mean silhouette width above 0.5 reflects strong structure; 0.25–0.5 is moderate; below 0.25 suggests weak or arbitrary groupings")
+                                             )
+                                           )
+                                    )
+                                  )
+                         ),
+                         
                          tabPanel("Cluster Plot",
                                   h4("Cluster Plot"),
                                   p("This plot projects all customers onto a 2D space using Principal Component Analysis (PCA),
@@ -679,7 +654,7 @@ ui <- dashboardPage(
                                       tags$li("Heavily overlapping clusters suggest the variables may not clearly distinguish customer groups"),
                                       tags$li("Silhouette Width: Higher is better (max = 1); values above 0.5 indicate strong cluster separation, 0.25–0.5 is moderate."),
                                       tags$li("Entropy: Lower is better; indicates meaningfully uneven cluster sizes rather than arbitrary equal splits."),
-                                      tags$li("AIC / BIC: Lower is better; a drop as k increases suggests real structure; a plateau suggests overfitting. N/A for CLARA-based clustering.")
+                                      tags$li("AIC / BIC: Lower is better; a drop as k increases suggests real structure; a plateau suggests overfitting.")
                                       )
                                   )
                          ),
@@ -703,79 +678,7 @@ ui <- dashboardPage(
                                       tags$li("Very small clusters (<10%) may represent genuine niche segments or outliers; inspect their profiles carefully before acting on them")
                                       )
                                     )
-                                  ),
-                         
-                         tabPanel("Within-Cluster Profiles",
-                                  h4("Within-Cluster Profiles"),
-                                  p("This heatmap displays the mean value of each variable for each cluster. The colour reflects
-                                  the scaled mean across clusters; red indicates this cluster scores relatively high on that
-                                    variable, blue indicates relatively low. The raw mean is shown as a number inside each cell."),
-                                  
-                                  plotOutput("plot_sat_heatmap", height = "350px"),
-                                  
-                                  tags$details(
-                                    style = "margin-top: 10px;",
-                                    tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
-                                                 "Click here to understand how to interpret the plot"
-                                                 ),
-                                    tags$ul(
-                                      style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
-                                      tags$li("Red cells identify the defining characteristics of a cluster; what makes it distinct"),
-                                      tags$li("Blue cells highlight what a cluster lacks relative to others"),
-                                      tags$li("Variables with little colour variation across all clusters (all near white) are not driving the segmentation and could potentially be removed"),
-                                      tags$li("Use this plot to assign meaningful labels to clusters (e.g. High Spenders, Weekend Users)")
-                                      )
-                                    )
-                                  ),
-                         
-                         tabPanel("Cluster Evaluation",
-                                  h4("Cluster Evaluation"),
-                                  fluidRow(
-                                    column(6,
-                                    p("The elbow plot helps determine the optimal number of clusters (k) by showing how total 
-                                    within-cluster sum of squares (WSS) decreases as k increases. A lower WSS indicates that 
-                                      customers within each cluster are more similar to one another."),
-                                    
-                                    plotOutput("plot_sat_elbow", height = "300px"),
-                                    
-                                    tags$details(
-                                      style = "margin-top: 10px;",
-                                      tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
-                                                   "Click here to understand how to interpret the plot"
-                                                   ),
-                                      tags$ul(
-                                        style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
-                                        tags$li("A sharp drop in WSS as k increases suggests each additional cluster is capturing meaningful structure in the data"),
-                                        tags$li("The elbow, where the rate of decrease slows and the curve begins to flatten, indicates the optimal k, beyond which adding more clusters yields diminishing returns"),
-                                        tags$li("A gradual curve with no clear elbow suggests the data does not have strong natural cluster structure, and any choice of k is somewhat arbitrary"),
-                                        tags$li("Use this plot alongside the silhouette plot to confirm your choice of k. The optimal k from the elbow plot should ideally also correspond to a higher silhouette width")
-                                        )
-                                      )
-                                    ),
-                                    
-                                    column(6,
-                                    p("The silhouette plot measures how well each customer fits their assigned cluster. Each bar 
-                                    (or filled region) represents individual customers within a cluster, and the red dashed line 
-                                      marks the overall average silhouette width."),
-                                    
-                                    plotOutput("plot_sat_sil", height = "300px"),
-                                    
-                                    tags$details(
-                                      style = "margin-top: 10px;",
-                                      tags$summary(style = "cursor: pointer; color: #6b7280; font-size: 14px; padding: 4px 0;",
-                                                   "Click here to understand how to interpret the plot"
-                                                   ),
-                                      tags$ul(
-                                        style = "padding-left: 16px; margin-top: 8px; font-size: 14px; color: #374151;",
-                                        tags$li("Scores close to 1 indicate a customer is well-matched to their cluster and clearly separated from neighbouring clusters"),
-                                        tags$li("Negative scores suggest the customer may have been assigned to the wrong cluster"),
-                                        tags$li("Clusters where most members exceed the average line are well-defined; clusters with many members falling below it may benefit from a different value of k"),
-                                        tags$li("A mean silhouette width above 0.5 reflects strong structure; 0.25–0.5 is moderate; below 0.25 suggests weak or arbitrary groupings")
-                                        )
-                                      )
-                                    )
                                   )
-                         )
                        )
                 )
               )

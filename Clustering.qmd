@@ -42,8 +42,6 @@ Four plots are provided:
 
 -   **Cluster Composition** — proportion of customers in each cluster, helping assess whether the segmentation produces balanced or skewed groups
 
--   **Within-Cluster Profiles** — centroid heatmap showing the mean encoded value of each demographic variable per cluster, revealing which variables drive the differences between group.
-
 -   **Cluster Evaluation** — silhouette plot showing how well each customer fits their assigned cluster
 
 Since CLARA is used, cluster quality is assessed using **silhouette width** (higher is better, max = 1) and **entropy** (lower is better).
@@ -93,44 +91,6 @@ ggplot(cluster_df, aes(x = Cluster, y = Count, fill = Cluster)) +
   theme(legend.position = "none")
 ```
 
-## Within-Cluster Profiles
-
-```{r}
-#| code-fold: true
-#| code-summary: "Show the code"
-#| fig-align: 'center'
-
-# Encode categoricals + keep only numeric columns for analysis
-data_encoded <- demo_data %>%
-  mutate(across(where(is.character), ~ as.numeric(factor(.x)))) %>%
-  mutate(across(where(is.factor),    ~ as.numeric(.x))) %>%
-  # Select only numeric columns (exclude customer_id, dates, etc.)
-  select(where(is.numeric))
-
-# Use your clustering result (change this line as needed)
-clusters <- demo_res$clustering  # or usage_res$clustering, or sat_km$cluster
-
-# Create heatmap - now safe!
-data.frame(cluster = factor(clusters), data_encoded) %>%
-  group_by(cluster) %>%
-  summarise(across(everything(), mean), .groups = "drop") %>%
-  # Optional: select specific variables (uncomment if you want subset)
-  # select(cluster, active_products, app_logins_frequency, feature_usage_diversity) %>%
-  pivot_longer(-cluster, names_to = "variable", values_to = "value") %>%
-  group_by(variable) %>%
-  mutate(value_scaled = scale(value)[,1]) %>%
-  ggplot(aes(x = variable, y = cluster, fill = value_scaled)) +
-  geom_tile(color = "white") +
-  geom_text(aes(label = round(value, 2)), size = 2.5) +
-  scale_fill_gradient2(low = "steelblue", mid = "white", high = "tomato", midpoint = 0) +
-  labs(title = "Cluster Centroid Heatmap (Numeric Variables Only)", 
-       x = NULL, 
-       y = "Cluster", 
-       fill = "Scaled\\nMean") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
-```
-
 ## Silhouette Plot
 
 ```{r}
@@ -155,8 +115,6 @@ Five plots are provided:
 -   **Cluster Plot** — PCA projection showing cluster separation across transaction dimensions
 
 -   **Cluster Composition** — proportion of customers per cluster, highlighting dominant and niche segments
-
--   **Within-Cluster Profiles** — heatmap of scaled cluster centroids, identifying key behavioural differentiators such as transaction value and weekend activity
 
 -   **Elbow Plot** — shows total within-cluster sum of squares (WSS) across k=1 to 10, helping identify the optimal number of clusters
 
@@ -219,43 +177,6 @@ ggplot(cluster_sizes, aes(x = Cluster, y = Count, fill = Cluster)) +
   theme(legend.position = "none")
 ```
 
-## Within-Cluster Profiles
-
-```{r}
-#| code-fold: true
-#| code-summary: "Show the code"
-#| fig-align: 'center'
-# Encode categoricals + keep only numeric columns for analysis
-data_encoded <- trans_data %>%
-  mutate(across(where(is.character), ~ as.numeric(factor(.x)))) %>%
-  mutate(across(where(is.factor),    ~ as.numeric(.x))) %>%
-  # Select only numeric columns (exclude customer_id, dates, etc.)
-  select(where(is.numeric))
-
-# Use your clustering result (change this line as needed)
-clusters <- trans_km$cluster # or usage_res$clustering, or sat_km$cluster
-
-# Create heatmap - now safe!
-data.frame(cluster = factor(clusters), data_encoded) %>%
-  group_by(cluster) %>%
-  summarise(across(everything(), mean), .groups = "drop") %>%
-  # Optional: select specific variables (uncomment if you want subset)
-  # select(cluster, active_products, app_logins_frequency, feature_usage_diversity) %>%
-  pivot_longer(-cluster, names_to = "variable", values_to = "value") %>%
-  group_by(variable) %>%
-  mutate(value_scaled = scale(value)[,1]) %>%
-  ggplot(aes(x = variable, y = cluster, fill = value_scaled)) +
-  geom_tile(color = "white") +
-  geom_text(aes(label = round(value, 2)), size = 2.5) +
-  scale_fill_gradient2(low = "steelblue", mid = "white", high = "tomato", midpoint = 0) +
-  labs(title = "Cluster Centroid Heatmap (Numeric Variables Only)", 
-       x = NULL, 
-       y = "Cluster", 
-       fill = "Scaled\\nMean") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
-```
-
 ## Elbow Plot
 
 ```{r}
@@ -307,8 +228,6 @@ Four plots are provided:
 -   **Cluster Plot** — PCA projection of usage patterns coloured by cluster
 
 -   **Cluster Composition** — distribution of customers across clusters
-
--   **Within-Cluster Profiles** — heatmap highlighting which usage variables differ most across segments, particularly app login frequency
 
 -   **Cluster Evaluation** — silhouette plot assessing cluster cohesion
 
@@ -364,44 +283,6 @@ ggplot(cluster_df, aes(x = Cluster, y = Count, fill = Cluster)) +
   theme(legend.position = "none")
 ```
 
-## Within-Cluster Profiles
-
-```{r}
-#| code-fold: true
-#| code-summary: "Show the code"
-#| fig-align: 'center'
-
-# Encode categoricals + keep only numeric columns for analysis
-data_encoded <- usage_data %>%
-  mutate(across(where(is.character), ~ as.numeric(factor(.x)))) %>%
-  mutate(across(where(is.factor),    ~ as.numeric(.x))) %>%
-  # Select only numeric columns (exclude customer_id, dates, etc.)
-  select(where(is.numeric))
-
-# Use your clustering result (change this line as needed)
-clusters <- usage_res$clustering  # or usage_res$clustering, or sat_km$cluster
-
-# Create heatmap - now safe!
-data.frame(cluster = factor(clusters), data_encoded) %>%
-  group_by(cluster) %>%
-  summarise(across(everything(), mean), .groups = "drop") %>%
-  # Optional: select specific variables (uncomment if you want subset)
-  # select(cluster, active_products, app_logins_frequency, feature_usage_diversity) %>%
-  pivot_longer(-cluster, names_to = "variable", values_to = "value") %>%
-  group_by(variable) %>%
-  mutate(value_scaled = scale(value)[,1]) %>%
-  ggplot(aes(x = variable, y = cluster, fill = value_scaled)) +
-  geom_tile(color = "white") +
-  geom_text(aes(label = round(value, 2)), size = 2.5) +
-  scale_fill_gradient2(low = "steelblue", mid = "white", high = "tomato", midpoint = 0) +
-  labs(title = "Cluster Centroid Heatmap (Numeric Variables Only)", 
-       x = NULL, 
-       y = "Cluster", 
-       fill = "Scaled\\nMean") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
-```
-
 ## Silhouette Plot
 
 ```{r}
@@ -426,8 +307,6 @@ Five plots are provided:
 -   **Cluster Plot** — PCA projection showing how satisfaction profiles separate in 2D space
 
 -   **Cluster Composition** — proportion of customers per cluster
-
--   **Within-Cluster Profiles** — heatmap of cluster centroids, showing which satisfaction dimensions vary most across groups
 
 -   **Elbow Plot** — helps determine the optimal k; a gradual curve with no clear elbow suggests satisfaction data lacks strong natural cluster structure
 
@@ -487,43 +366,6 @@ ggplot(cluster_sizes, aes(x = Cluster, y = Count, fill = Cluster)) +
        y = "Number of Customers") +
   theme_minimal() +
   theme(legend.position = "none")
-```
-
-## Within-Cluster Profiles
-
-```{r}
-#| code-fold: true
-#| code-summary: "Show the code"
-#| fig-align: 'center'
-# Encode categoricals + keep only numeric columns for analysis
-data_encoded <- sat_data %>%
-  mutate(across(where(is.character), ~ as.numeric(factor(.x)))) %>%
-  mutate(across(where(is.factor),    ~ as.numeric(.x))) %>%
-  # Select only numeric columns (exclude customer_id, dates, etc.)
-  select(where(is.numeric))
-
-# Use your clustering result (change this line as needed)
-clusters <- sat_km$cluster
-
-# Create heatmap - now safe!
-data.frame(cluster = factor(clusters), data_encoded) %>%
-  group_by(cluster) %>%
-  summarise(across(everything(), mean), .groups = "drop") %>%
-  # Optional: select specific variables (uncomment if you want subset)
-  # select(cluster, active_products, app_logins_frequency, feature_usage_diversity) %>%
-  pivot_longer(-cluster, names_to = "variable", values_to = "value") %>%
-  group_by(variable) %>%
-  mutate(value_scaled = scale(value)[,1]) %>%
-  ggplot(aes(x = variable, y = cluster, fill = value_scaled)) +
-  geom_tile(color = "white") +
-  geom_text(aes(label = round(value, 2)), size = 2.5) +
-  scale_fill_gradient2(low = "steelblue", mid = "white", high = "tomato", midpoint = 0) +
-  labs(title = "Cluster Centroid Heatmap (Numeric Variables Only)", 
-       x = NULL, 
-       y = "Cluster", 
-       fill = "Scaled\\nMean") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
 ```
 
 ## Elbow Plot

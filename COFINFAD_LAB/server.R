@@ -6,11 +6,15 @@ df <- read_csv("data/cleaned_data.csv")
 my_palette <- brewer.pal(n = 12, "Paired")
 
 cat_vars <- reactive({
-  names(df)[sapply(df, function(x) is.factor(x) || is.character(x))]
+  setdiff(
+    names(df)[sapply(df, function(x) is.factor(x) || is.character(x))],
+    c("customer_id")
+  )
 })
 num_vars <- reactive({
-  names(df)[sapply(df, is.numeric)]
+  setdiff(names(df)[sapply(df, is.numeric)], "customer_id")
 })
+
 
 # Entropy Calculation
 calc_entropy <- function(clusters) {
@@ -48,28 +52,6 @@ plot_cluster_bar <- function(clusters) {
     theme_minimal()
 }
 
-# Within-Cluster Profiles
-plot_heatmap <- function(clusters, data) {
-  # encode any character/factor columns numerically
-  data_encoded <- data %>%
-    mutate(across(where(is.character), ~ as.numeric(factor(.x)))) %>%
-    mutate(across(where(is.factor),    ~ as.numeric(.x)))
-  
-  data.frame(cluster = factor(clusters), data_encoded) %>%
-    group_by(cluster) %>%
-    summarise(across(everything(), mean), .groups = "drop") %>%
-    pivot_longer(-cluster, names_to = "variable", values_to = "value") %>%
-    group_by(variable) %>%
-    mutate(value_scaled = scale(value)[,1]) %>%
-    ggplot(aes(x = variable, y = cluster, fill = value_scaled)) +
-    geom_tile(color = "white") +
-    geom_text(aes(label = round(value, 2)), size = 3) +
-    scale_fill_gradient2(low = "steelblue", mid = "white", high = "tomato", midpoint = 0) +
-    labs(title = "Cluster Centroid Heatmap", x = NULL, y = "Cluster", fill = "Scaled\nMean") +
-    theme_minimal() +
-    theme(axis.text.x = element_text(angle = 30, hjust = 1))
-}
-
 # Evaluation Plots
 plot_elbow <- function(data, max_k = 10) {
   wss <- sapply(1:max_k, function(k) {
@@ -83,6 +65,33 @@ plot_elbow <- function(data, max_k = 10) {
     scale_x_continuous(breaks = 1:max_k) +
     labs(title = "Elbow Plot", x = "Number of Clusters (k)",
          y = "Total Within-Cluster SS") +
+    theme_minimal()
+}
+
+plot_elbow_clara <- function(data, max_k = 10) {
+  wss <- sapply(1:max_k, function(k) {
+    # Use a small sample size to mimic clara behavior
+    clara_fit <- clara(data, k = k, samples = 50, sampsize = min(40, nrow(data)))
+    # clara$objective approximates the average dissimilarity;
+    # for Euclidean distance, a simple WSS proxy is:
+    # sum((object$medoids - corresponding data)²) ≈ 2 * (n * average_diss^2 / 2)
+    # For a rough elbow, many authors just use average_diss as a proxy.
+    # If you want something closer to kmeans‑style WSS, consider:
+    # - compute distances from each point to its medoid, square them, then sum.
+    # For now, we’ll keep it simple:
+    clara_fit$objective  # roughly proportional to WSS
+  })
+  
+  data.frame(k = 1:max_k, wss = wss) %>%
+    ggplot(aes(x = k, y = wss)) +
+    geom_line(color = "steelblue", linewidth = 1) +
+    geom_point(size = 3, color = "steelblue") +
+    scale_x_continuous(breaks = 1:max_k) +
+    labs(
+      title = "Elbow Plot (CLARA)",
+      x = "Number of Clusters (k)",
+      y = "Average Dissimilarity / WSS Proxy"
+    ) +
     theme_minimal()
 }
 
@@ -188,15 +197,9 @@ function(input, output, session) {
     var_name <- input$demo_var
     
     if(var_name == "age") {
-      
-      df$age_group <- cut(df$age,
-                          breaks = c(0, 25, 35, 45, 60, 100),
-                          labels = c("<25", "25-34", "35-44", "45-59", "60+"))
-      
-      ggplot(df, aes(x = age_group)) +
-        geom_bar(fill = "#3498db") +
-        geom_text(stat = "count", aes(label = ..count..), vjust = -0.5) +
-        labs(title = "Age Distribution", x = "Age Group", y = "Count") +
+      ggplot(df, aes_string(x = var_name)) +
+        geom_histogram(fill = "#3498db", bins = 30) +
+        labs(title = var_name, x = "", y = "Frequency") +
         theme_minimal()
       
     } else if(var_name == "location" | var_name == "occupation") {
@@ -215,9 +218,9 @@ function(input, output, session) {
         theme_minimal()
     }
   })
+
   
   output$demo_var_name <- renderText({
-    req(input$demo_var)
     input$demo_var
   })
   
@@ -377,7 +380,7 @@ function(input, output, session) {
   # SATISFACTION
   output$sat_plot <- renderPlot({
     
-    var_name <- input$sat_var
+    var_name <- input$sat_var 
     
     if(var_name %in% c("satisfaction_score", "product_satisfaction")) {
       
@@ -427,56 +430,41 @@ function(input, output, session) {
   #Bivariate 
   output$bivar_inputs <- renderUI({
     tab <- input$bivar_tabs
+
     if(tab == "Category vs Numerical") {
       tagList(
-        selectInput("var1", "Categorical Variable", choices = cat_vars()),
-        selectInput("var2", "Numerical Variable", choices = num_vars())
+        selectInput("var1", "Categorical Variable", 
+                    choices = cat_vars()),
+        selectInput("var2", "Numerical Variable", 
+                    choices = num_vars())
       )
     } else if(tab == "Numerical vs Numerical") {
       tagList(
-        selectInput("var1", "Variable 1", choices = num_vars()),
-        selectInput("var2", "Variable 2", choices = num_vars())
+        selectInput("var1", "Variable 1", 
+                    choices = num_vars()),
+        selectInput("var2", "Variable 2", 
+                    choices = num_vars())
       )
     } else {
       tagList(
-        selectInput("var1", "Variable 1", choices = cat_vars()),
-        selectInput("var2", "Variable 2", choices = cat_vars())
+        selectInput("var1", "Variable 1", 
+                    choices = cat_vars()),
+        selectInput("var2", "Variable 2", 
+                    choices = cat_vars())
       )
     }
   })
   
-  output$plot_selector <- renderUI({
-    tab <- input$bivar_tabs
-    if(tab == "Category vs Numerical") {
-      selectInput("plot_type", "Plot Type",
-                  choices = c("Boxplot", "Violin", "Raincloud", "Ridgeline"))
-    } else if(tab == "Numerical vs Numerical") {
-      selectInput("plot_type", "Plot Type",
-                  choices = c("Scatter"))
-    } else {
-      selectInput("plot_type", "Plot Type",
-                  choices = c("Stacked Bar", "Mosaic"))
-    }
-  })
-  
-  last_clicked <- reactiveVal("eda")
-  observeEvent(input$eda_btn, {
-    last_clicked("eda")
-  })
-  observeEvent(input$cda_btn, {
-    last_clicked("cda")
-  })
-  
-  output$bivar_plot <- renderPlot({
-    req(input$var1, input$var2, input$plot_type, input$bivar_tabs)
-    x <- input$var1
-    y <- input$var2
-    type <- input$plot_type
-    tab <- input$bivar_tabs
     
-    # CATEGORY vs NUMERICAL
-    if(tab == "Category vs Numerical") {
-      if(last_clicked() == "cda") {
+    output$bivar_plot <- renderPlot({
+      req(input$var1, input$var2, input$bivar_tabs)
+      x <- input$var1
+      y <- input$var2
+      tab <- input$bivar_tabs
+      
+      # CATEGORY vs NUMERICAL
+      if (tab == "Category vs Numerical") {
+        req(input$test_type, input$conf_level)
         ggstatsplot::ggbetweenstats(
           data = df,
           x = !!sym(x),
@@ -484,50 +472,23 @@ function(input, output, session) {
           type = input$test_type,
           conf.level = as.numeric(input$conf_level)
         )
-      } else if(type == "Boxplot") {
-        ggplot(df, aes(x = .data[[x]], y = .data[[y]])) +
-          geom_boxplot(fill = "#9e68aa", outliers = FALSE) +
-          coord_flip()
       }
-      else if(type == "Violin") {
-        ggplot(df, aes(x = .data[[x]], y = .data[[y]])) +
-          geom_violin(fill = "#25238d") +
-          coord_flip()
-      }
-      else if(type == "Raincloud") {
-        ggplot(df, aes(x = .data[[x]], y = .data[[y]])) +
-          ggdist::stat_halfeye(adjust = 0.5, justification = -0.2) +
-          geom_boxplot(width = 0.2) +
-          coord_flip()
-      }
-      else if(type == "Ridgeline") {
-        ggplot(df, aes(x = .data[[y]], y = .data[[x]])) +
-          ggridges::geom_density_ridges()
-      }
-    }
-    
-    # NUMERICAL vs NUMERICAL
-    else if(tab == "Numerical vs Numerical") {
-      if(last_clicked() == "cda") {
+      
+      # NUMERICAL vs NUMERICAL
+      else if (tab == "Numerical vs Numerical") {
+        req(input$test_type, input$conf_level)
         ggstatsplot::ggscatterstats(
           data = df,
           x = !!sym(x),
           y = !!sym(y),
           type = input$test_type,
-          conf.level = as.numeric(input$conf_level), 
+          conf.level = as.numeric(input$conf_level),
           palette = my_palette
         )
       }
-      else if(type == "Scatter") {
-        ggplot(df, aes(x = .data[[x]], y = .data[[y]])) +
-          geom_point(alpha = 0.6) +
-          geom_smooth()
-      }
-  }
-    
-    # CATEGORICAL vs CATEGORICAL
-    else {
-      if(last_clicked() == "cda") {
+      
+      # CATEGORICAL vs CATEGORICAL
+      else {
         ggstatsplot::ggbarstats(
           data = df,
           x = !!sym(x),
@@ -535,21 +496,8 @@ function(input, output, session) {
           palette = "Dark2"
         )
       }
-      else if(type == "Stacked Bar") {
-        ggplot(df, aes(x = .data[[x]], fill = .data[[y]])) +
-          geom_bar(position = "fill") +
-          labs(y = "Proportion")
-      }
-      else if(type == "Mosaic") {
-        ggplot(data = df) +
-          ggmosaic::geom_mosaic(
-            aes_string(x = paste0("product(", x, ")"),
-                       fill = y)
-          )
-        }
-      }
     }
-  )
+    )
   
   output$stat_controls <- renderUI({
     tab <- input$bivar_tabs
@@ -616,15 +564,12 @@ function(input, output, session) {
     clara(df[, input$demo_vars], k = input$demo_k)
   })
   
-  output$plot_demo <- renderPlot({
-    fviz_cluster(demo_res())
-  })
-  
   output$plot_demo_bar <- renderPlot({
     plot_cluster_bar(demo_res()$clustering)
   })
-  output$plot_demo_heatmap <- renderPlot({
-    plot_heatmap(demo_res()$clustering, df[, input$demo_vars])
+  
+  output$plot_demo_elbow <- renderPlot({
+    plot_elbow_clara(input$demo_vars, max_k = 10)
   })
 
   output$plot_demo_sil <- renderPlot({
@@ -647,10 +592,6 @@ function(input, output, session) {
   
   output$plot_trans_bar <- renderPlot({
     plot_cluster_bar(trans_res()$cluster)
-  })
-  
-  output$plot_trans_heatmap <- renderPlot({
-    plot_heatmap(trans_res()$cluster, as.data.frame(scale(df[, input$trans_vars])))
   })
   
   output$plot_trans_elbow <- renderPlot({
@@ -681,9 +622,7 @@ function(input, output, session) {
   output$plot_usage_bar <- renderPlot({
     plot_cluster_bar(usage_res()$clustering)
   })
-  output$plot_usage_heatmap <- renderPlot({
-    plot_heatmap(usage_res()$clustering, df[, input$usage_vars])
-  })
+
   output$plot_usage_sil <- renderPlot({
     plot_silhouette_clara(usage_res())
   })
@@ -705,9 +644,7 @@ function(input, output, session) {
   output$plot_sat_bar <- renderPlot({
     plot_cluster_bar(sat_res()$cluster)
   })
-  output$plot_sat_heatmap <- renderPlot({
-    plot_heatmap(sat_res()$cluster, as.data.frame(scale(df[, input$sat_vars])))
-  })
+
   output$plot_sat_elbow <- renderPlot({
     plot_elbow(scale(df[, input$sat_vars]))
   })
